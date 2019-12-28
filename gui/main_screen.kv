@@ -1,0 +1,322 @@
+
+#: import Button kivy.uix.button.Button
+
+<MainScreen>:
+
+    TabbedPanel:
+
+        # variable in py file: variable in ky file
+
+        # read from disk
+        txtCommandLineRFD: txtCommandLineRFD
+        chkRevsPerTrack: chkRevsPerTrack
+        txtRevsPerTrack: txtRevsPerTrack
+        chkFirstCylToRead: chkFirstCylToRead
+        txtFirstCylToRead: txtFirstCylToRead
+        chkLastCylToRead: chkLastCylToRead
+        txtLastCylToRead: txtLastCylToRead
+        tglSingleSidedRFD: tglSingleSidedRFD
+
+        # write to disk
+        txtCommandLineWTD: txtCommandLineWTD
+        chkAdjustSpeed: chkAdjustSpeed
+        chkFirstCylToWrite: chkFirstCylToWrite
+        txtFirstCylToWrite: txtFirstCylToWrite
+        chkLastCylToWrite: chkLastCylToWrite
+        txtLastCylToWrite: txtLastCylToWrite
+        tglSingleSidedWTD: tglSingleSidedWTD
+
+        # set delays
+        txtCommandLineDelays: txtCommandLineDelays
+        chkDelayAfterSelect: chkDelayAfterSelect
+        txtDelayAfterSelect: txtDelayAfterSelect
+        chkDelayBetweenSteps: chkDelayBetweenSteps
+        txtDelayBetweenSteps: txtDelayBetweenSteps
+        chkSettleDelayAfterSeek: chkSettleDelayAfterSeek
+        txtSettleDelayAfterSeek: txtSettleDelayAfterSeek
+        chkDelayUntilAutoDeselect: chkDelayUntilAutoDeselect
+        txtDelayUntilAutoDeselect: txtDelayUntilAutoDeselect
+
+        # update firmware
+        txtCommandLineFirmware: txtCommandLineFirmware
+
+        # creating the size
+        # and the alignment of the tab
+        size_hint: 1, 1
+        pos_hint: {'center_x': .5, 'center_y': .5}
+
+        do_default_tab: False
+        tab_width: self.width / 5
+
+        # READ FROM DISK
+        FocusTabbedPanelItem:
+            text: ' Read from Disk '
+            on_focus: if self.focus: root.got_focus_read_from_disk()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id: txtCommandLineRFD
+                    size_hint: 1,0.5
+                    text: "python. gw.py read --revs=3 --scyl=0 --ecyl=34 --single-sided '/home/user/mydisk.scp' COM1"
+                GridLayout:
+                    rows: 6
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    CheckBox:
+                        id: chkRevsPerTrack
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "Revs to read per track"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtRevsPerTrack
+                        text: "3"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkRevsPerTrack.active
+                    CheckBox:
+                        id: chkFirstCylToRead
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "First cylinder to read"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtFirstCylToRead
+                        text: "0"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkFirstCylToRead.active
+                    CheckBox:
+                        id: chkLastCylToRead
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "Last cylinder to read"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtLastCylToRead
+                        text: "79"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkLastCylToRead.active
+                GridLayout:
+                    rows: 1
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglSingleSidedRFD
+                        text: "Single Sided"
+                        state: "normal"
+                        on_release: root.build_read_from_disk()
+                    Button:
+                        id: btnSelectFolderRFD
+                        text: "Select Folder"
+                        on_release: app.root.ids['screen_manager'].current = 'folder_dialog_screen'
+                    Button:
+                        id: btnSelectFileRFD
+                        text: "Select File"
+                        on_release: app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                Button:
+                    id: btnLaunchRFD
+                    size_hint:1, 0.2
+                    text: "Launch"
+                    on_release: root.process_read_from_disk()
+
+        # WRITE TO DISK
+        FocusTabbedPanelItem:
+            text: ' Write to Disk '
+            on_focus: if self.focus: root.got_focus_write_to_disk()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineWTD
+                    size_hint: 1,0.5
+                    text: "python gw.py write --scyl=0 --ecyl=79 --adjust-speed '/home/user/mydisk.scp' COM11"
+                GridLayout:
+                    rows: 4
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    CheckBox:
+                        id: chkAdjustSpeed
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "Adjust Speed"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    Label:
+                        text: " "
+                    CheckBox:
+                        id: chkFirstCylToWrite
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "First cylinder to write"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtFirstCylToWrite
+                        text: "0"
+                        disabled: not chkFirstCylToWrite.active
+                        on_text: root.build_write_to_disk()
+                    CheckBox:
+                        id: chkLastCylToWrite
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "Last cylinder to write"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtLastCylToWrite
+                        text: "79"
+                        disabled: not chkLastCylToWrite.active
+                        on_text: root.build_write_to_disk()
+                GridLayout:
+                    rows: 1
+                    cols: 2
+                    padding: 10
+                    spacing: 10
+                    size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglSingleSidedWTD
+                        text: "Single Sided"
+                        state: "normal"
+                        group: "WriteToDiskSides"
+                        on_release: root.build_write_to_disk()
+                    Button:
+                        id: btnSelectFileWTD
+                        text: "Select File"
+                        on_release: app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                Button:
+                    id: btnLaunchWTD
+                    size_hint: 1,0.2
+                    text: "Launch"
+                    on_release: root.process_write_to_disk()
+
+        # SET DELAYS
+        FocusTabbedPanelItem:
+            text: ' Set Delays '
+            on_focus: if self.focus: root.got_focus_set_delays()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineDelays
+                    size_hint: 1,0.5
+                    text: "python gw.py delays --step=12000 COM11"
+                GridLayout:
+                    id: grdSetDelays
+                    rows: 5
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    CheckBox:
+                        id: chkDelayAfterSelect
+                        on_release: root.build_set_delays()
+                    Label:
+                        text: "Delay after drive select (usecs)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtDelayAfterSelect
+                        text: "10"
+                        on_text: root.build_set_delays()
+                        disabled: not chkDelayAfterSelect.active
+                    CheckBox:
+                        id: chkDelayBetweenSteps
+                        on_release: root.build_set_delays()
+                    Label:
+                        text: "Delay between head steps (usecs)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtDelayBetweenSteps
+                        text: "3000"
+                        on_text: root.build_set_delays()
+                        disabled: not chkDelayBetweenSteps.active
+                    CheckBox:
+                        id: chkSettleDelayAfterSeek
+                        on_release: root.build_set_delays()
+                    Label:
+                        text: "Settle delay after seek (msecs)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSettleDelayAfterSeek
+                        text: "15"
+                        on_text: root.build_set_delays()
+                        disabled: not chkSettleDelayAfterSeek.active
+                    CheckBox:
+                        id: chkDelayAfterMotorOn
+                        on_release: root.build_set_delays()
+                    Label:
+                        text: "Delay after motor on (usecs)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtDelayAfterMotorOn
+                        text: "750"
+                        on_text: root.build_set_delays()
+                        disabled: not chkDelayAfterMotorOn.active
+                    CheckBox:
+                        id: chkDelayUntilAutoDeselect
+                        on_release: root.build_set_delays()
+                    Label:
+                        text: "Quiescent time until auto deselect (usecs)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtDelayUntilAutoDeselect
+                        text: "10"
+                        on_text: root.build_set_delays()
+                        disabled: not chkDelayUntilAutoDeselect.active
+                Button:
+                    id: btnLaunchDelays
+                    size_hint: 1,0.2
+                    text: "Launch"
+                    on_release: root.process_set_delays()
+
+        # UPDATE FIRMWARE
+        FocusTabbedPanelItem:
+            text: ' Update Firmware '
+            on_focus: if self.focus: root.got_focus_update_firmware()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineFirmware
+                    size_hint: 1,0.5
+                    text: "python.exe gw.py update 'Greaseweazle-v0.7.upd' COM11"
+                Button:
+                    id: btnSelectFileFirmware
+                    text: "Select File"
+                    on_release: app.root.ids['screen_manager'].current = 'file_update_dialog_screen'
+                Button:
+                    id: btnLaunchFirmware
+                    text: "Launch"
+                    on_release:root.process_update_firmware()
+
+       # CONFIGURATION
+        FocusTabbedPanelItem:
+            text: ' Port '
+            on_focus: if self.focus: root.got_focus_configuration(commButtonLayout)
+            BoxLayout:
+                orientation: "vertical"
+                BoxLayout:
+                    id: commButtonLayout
+                    orientation: "horizontal"
+                    on_kv_post: root.create_comm_buttons(commButtonLayout)
+                BoxLayout:
+                    Button:
+                        text: "Refresh Available Ports"
+                        on_release: root.create_comm_buttons(commButtonLayout)

@@ -1,0 +1,15 @@
+
+<ErrorScreen>:
+
+	BoxLayout:
+		orientation: 'horizontal'
+		BoxLayout:
+			orientation: 'vertical'
+			Label:
+			    font_size: '20 sp'
+                markup: True
+				text: "Please wait for the process to end and\n\nthen close the window before proceeding"
+			Button:
+				size_hint: 1,.1
+			    text: 'Ok'
+				on_release: app.change_screen("main_screen")

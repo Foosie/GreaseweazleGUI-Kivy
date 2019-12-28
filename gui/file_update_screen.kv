@@ -1,0 +1,23 @@
+
+<FileUpdateDialogScreen>:
+
+	#FileChooserIconView:
+	FileChooserListView:
+		id: fileChooser
+	    dirselect: False
+		show_hidden: False
+		filters: ['*.upd']
+
+	BoxLayout:
+		orientation: 'horizontal'
+		size_hint: 1, 0.1
+		BoxLayout:
+			orientation: 'vertical'
+			Label:
+			    font_size: '20 sp'
+				text: str(fileChooser.selection)[2:-2].replace('\\\\', '\\')
+				on_text: root.set_file_name(str(fileChooser.selection)[2:-2].replace('\\\\', '\\'))
+			Button:
+				size_hint: 1,1
+			    text: 'Select File'
+				on_release: app.change_screen("main_screen")

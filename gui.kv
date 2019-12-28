@@ -1,0 +1,28 @@
+
+#: import FadeTransition kivy.uix.screenmanager.FadeTransition
+#: include gui/main_screen.kv
+#: include gui/file_screen.kv
+#: include gui/file_update_screen.kv
+#: include gui/folder_screen.kv
+#: include gui/error_screen.kv
+
+GridLayout:
+    cols: 1
+    ScreenManager:
+        id: screen_manager
+        transition: FadeTransition()
+        MainScreen:
+            name: "main_screen"
+            id: main_screen
+        FileDialogScreen:
+            name: "file_dialog_screen"
+            id: file_dialog_screen
+        FileUpdateDialogScreen:
+            name: "file_update_dialog_screen"
+            id: file_update_dialog_screen
+        FolderDialogScreen:
+            name: "folder_dialog_screen"
+            id: folder_dialog_screen
+        ErrorScreen:
+            name: "error_screen"
+            id: error_screen

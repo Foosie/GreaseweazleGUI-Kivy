@@ -1,0 +1,23 @@
+
+<FolderDialogScreen>:
+
+	#FileChooserIconView:
+	FileChooserListView:
+		id: folderChooser
+	    dirselect: True
+		show_hidden: False
+		filters: ['qwerty'] # how to disable showing files?
+
+	BoxLayout:
+		orientation: 'horizontal'
+		size_hint: 1, 0.1
+		BoxLayout:
+			orientation: 'vertical'
+			Label:
+				font_size: '20 sp'
+				text: str(folderChooser.selection)[2:-2].replace('\\\\', '\\')
+				on_text: root.set_folder_name(str(folderChooser.selection)[2:-2].replace('\\\\', '\\'))
+			Button:
+				size_hint: 1,1
+			    text: 'Select Folder'
+				on_release: app.change_screen("main_screen")
