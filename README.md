@@ -10,7 +10,7 @@ wiki: https://github.com/keirf/Greaseweazle/wiki
 
 facebook: https://www.facebook.com/groups/greaseweazle/
 
-prerequsites: python3, kivy, pyserial, psutil, xclip, xstat
+prerequsites: python3, kivy, pyserial, psutil, xclip, xstat, gnome-terminal
 
 This is my first Kivy application - work in progress.
  
