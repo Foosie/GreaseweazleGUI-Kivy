@@ -1,3 +1,14 @@
+# gui.py
+#
+# Greaseweazle GUI Wrapper
+#
+# Copyright (c) 2019 Don Mankin <don.mankin@yahoo.com>
+#
+# MIT License
+#
+# See the file LICENSE more details, or visit <https://opensource.org/licenses/MIT>.
+
+
 from kivy.config import Config
 #Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'width', '680')
