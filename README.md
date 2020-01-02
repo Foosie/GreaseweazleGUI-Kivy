@@ -2,7 +2,7 @@
 
 GUI Wrapper for Keir Fraser's Greaseweazle
 
-Kivy cross platform support for Windows and Ubuntu.
+Kivy cross platform support for Windows, Ubuntu, and Centos.
  
 Tools and USB interface for accessing a floppy drive at the raw flux level.
 

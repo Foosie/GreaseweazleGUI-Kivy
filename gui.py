@@ -32,7 +32,8 @@ import psutil
 import ntpath
 import subprocess
 import os
-if os.name == 'nt':
+
+if sys.platform == 'win32':
     from subprocess import Popen, CREATE_NEW_CONSOLE
 else:
     from subprocess import Popen
@@ -85,13 +86,16 @@ class MainScreen(Screen):
 
     # initialize variables
     gw_commports = serial.tools.list_ports.comports()
-    gw_comm_port = "COM1"
+    if sys.platform == 'win32':
+        gw_comm_port = "COM1"
+    else:
+        gw_comm_port = "ttyS0"
     gw_file_name = "mydisk.scp"
     gw_folder_name = ""
     gw_dirty = False
     gw_window_pid = -1
 
-    if os.name == 'nt':
+    if sys.platform == 'win32':
         gw_application_folder = sys.path[0] + "\\"
     else:
         gw_application_folder = sys.path[0] + "/"
@@ -136,7 +140,7 @@ class MainScreen(Screen):
 
     def build_read_from_disk(self):
         file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' read "
@@ -148,7 +152,7 @@ class MainScreen(Screen):
             cmdline += "--ecyl=" + self.ids.txtLastCylToRead.text + " "
         if self.ids.tglSingleSidedRFD.state == "down":
             cmdline += "--single-sided "
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
@@ -156,7 +160,7 @@ class MainScreen(Screen):
 
     def build_write_to_disk(self):
         file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" write "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' write "
@@ -168,14 +172,14 @@ class MainScreen(Screen):
             cmdline += "--ecyl=" + self.ids.txtLastCylToWrite.text + " "
         if self.ids.tglSingleSidedWTD.state == "down":
             cmdline += "--single-sided "
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineWTD.text = cmdline
 
     def build_set_delays(self):
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline = "python \"" + self.gw_application_folder + "gw.py\" delays "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' delays "
@@ -189,7 +193,7 @@ class MainScreen(Screen):
             cmdline += "--motor=" + self.ids.txtDelayAfterMotorOn.text + " "
         if self.ids.chkDelayUntilAutoDeselect.active:
             cmdline += "--auto-off=" + self.ids.txtDelayUntilAutoDeselect.text + " "
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline += self.gw_comm_port + "\""
         else:
             cmdline += self.gw_comm_port + ";read -n1\""
@@ -197,18 +201,18 @@ class MainScreen(Screen):
 
     def build_update_firmware(self):
         file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline = "python \"" + self.gw_application_folder + "gw.py\" update "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' update "
-        if os.name == "nt":
+        if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineFirmware.text = cmdline
 
     def process_read_from_disk(self):
-        if os.name == 'nt':
+        if sys.platform == 'win32':
             if not self.checkIfProcessRunning(self.gw_window_pid):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineRFD.text
                 p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -225,7 +229,7 @@ class MainScreen(Screen):
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_write_to_disk(self):
-        if os.name == 'nt':
+        if sys.platform == 'win32':
             if not self.checkIfProcessRunning(self.gw_window_pid):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineWTD.text
                 p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -242,7 +246,7 @@ class MainScreen(Screen):
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_set_delays(self):
-        if os.name == 'nt':
+        if sys.platform == 'win32':
             if not self.checkIfProcessRunning(self.gw_window_pid):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineDelays.text
                 p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -259,7 +263,7 @@ class MainScreen(Screen):
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_update_firmware(self):
-        if os.name == 'nt':
+        if sys.platform == 'win32':
             if not self.checkIfProcessRunning(self.gw_window_pid):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
                 p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -395,7 +399,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.28 / Host Tools v0.7 - by Don Mankin"
+    title = "GreaseweazleGUI v0.29 / Host Tools v0.7 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI
@@ -405,7 +409,7 @@ class MainApp(App):
     def on_request_close(self, *args):
         main_screen = self.root.ids['main_screen']
         screen_manager = self.root.ids['screen_manager']
-        if os.name == "nt":
+        if sys.platform == 'win32':
             if main_screen.checkIfProcessRunning(main_screen.gw_window_pid):
                 screen_manager.current = 'error_screen'
                 return True
