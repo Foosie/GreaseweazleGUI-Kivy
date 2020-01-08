@@ -213,69 +213,57 @@ class MainScreen(Screen):
 
     def process_read_from_disk(self):
         if sys.platform == 'win32':
-            if not self.checkIfProcessRunning(self.gw_window_pid):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineRFD.text
-                p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
         else:
-            #if not self.checkIfProcessRunningByName("gw.py"):
-            if True:
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineRFD.text
-                p = subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_write_to_disk(self):
         if sys.platform == 'win32':
-            if not self.checkIfProcessRunning(self.gw_window_pid):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineWTD.text
-                p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
         else:
-            #if not self.checkIfProcessRunningByName("gw.py"):
-            if True:
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineWTD.text
-                p = subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_set_delays(self):
         if sys.platform == 'win32':
-            if not self.checkIfProcessRunning(self.gw_window_pid):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineDelays.text
-                p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
         else:
-            if True:
-            #if not self.checkIfProcessRunningByName("gw.py"):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineDelays.text
-                p = subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_update_firmware(self):
         if sys.platform == 'win32':
-            if not self.checkIfProcessRunning(self.gw_window_pid):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
-                p = subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
         else:
-            if True:
-            #if not self.checkIfProcessRunningByName("gw.py"):
+            if not self.checkIfProcessRunningByScript("gw.py"):
                 command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineFirmware.text
-                p = subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-                self.gw_window_pid = p.pid
+                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
             else:
                 self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
@@ -325,27 +313,14 @@ class MainScreen(Screen):
             self.main_screen.build_update_firmware(self)
             self.main_screen.gw_dirty = False
 
-    def checkIfProcessRunning(self, pid):
-        # Iterate over the all the running process
-        for proc in psutil.process_iter():
-            try:
-                # Check if process name contains the given name string.
-                if pid == proc.pid:
-                    return True
-            except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-                pass
-        return False
-
-    def checkIfProcessRunningByName(self, name):  # broken
+    def checkIfProcessRunningByScript(self, script):
         # Iterate over the all the running process
         for proc in psutil.process_iter():
             try:
                 for l in proc.cmdline():
-                    if "gui.py" in l.lower():
-                        print("cmdline = " + l)
-                # Check if process name contains the given name string.
-                if name.lower() == proc.name().lower():
-                    return True
+                    if script in l.lower():
+                        #print("cmdline = " + l)
+                        return True
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
                 pass
         return False
@@ -399,7 +374,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.29 / Host Tools v0.7 - by Don Mankin"
+    title = "GreaseweazleGUI v0.30 / Host Tools v0.8 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI
@@ -410,7 +385,7 @@ class MainApp(App):
         main_screen = self.root.ids['main_screen']
         screen_manager = self.root.ids['screen_manager']
         if sys.platform == 'win32':
-            if main_screen.checkIfProcessRunning(main_screen.gw_window_pid):
+            if main_screen.checkIfProcessRunningByScript("gw.py"):
                 screen_manager.current = 'error_screen'
                 return True
             else:
