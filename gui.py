@@ -384,13 +384,10 @@ class MainApp(App):
     def on_request_close(self, *args):
         main_screen = self.root.ids['main_screen']
         screen_manager = self.root.ids['screen_manager']
-        if sys.platform == 'win32':
-            if main_screen.checkIfProcessRunningByScript("gw.py"):
-                screen_manager.current = 'error_screen'
-                return True
-            else:
-                return False
-        else:  # not working in linux
+        if main_screen.checkIfProcessRunningByScript("gw.py"):
+            screen_manager.current = 'error_screen'
+            return True
+        else:
             return False
 
 MainApp().run()
