@@ -6,7 +6,7 @@
 #
 # MIT License
 #
-# See the file LICENSE more details, or visit <https://opensource.org/licenses/MIT>.
+# See the file LICENSE for more details, or visit <https://opensource.org/licenses/MIT>.
 
 
 from kivy.config import Config
@@ -48,6 +48,8 @@ class MainScreen(Screen):
     txtFirstCylToRead = ObjectProperty(TextInput())
     chkLastCylToRead = ObjectProperty(CheckBox())
     txtLastCylToRead = ObjectProperty(TextInput())
+    chkSelectDriveRFD = ObjectProperty(CheckBox())
+    txtSelectDriveRFD = ObjectProperty(TextInput())
     tglSingleSidedRFD = ObjectProperty(ToggleButton())
     tglDoubleSidedRFD = ObjectProperty(ToggleButton())
 
@@ -58,6 +60,8 @@ class MainScreen(Screen):
     txtFirstCylToWrite = ObjectProperty(TextInput())
     chkLastCylToWrite = ObjectProperty(CheckBox())
     txtLastCylToWrite = ObjectProperty(TextInput())
+    chkSelectDriveWTD = ObjectProperty(CheckBox())
+    txtSelectDriveWTD = ObjectProperty(TextInput())
     tglSingleSidedWTD = ObjectProperty(ToggleButton())
     tglDoubleSidedWTD = ObjectProperty(ToggleButton())
 
@@ -86,10 +90,14 @@ class MainScreen(Screen):
 
     # initialize variables
     gw_commports = serial.tools.list_ports.comports()
-    if sys.platform == 'win32':
-        gw_comm_port = "COM1"
-    else:
-        gw_comm_port = "ttyS0"
+
+    # later versions of greaseweazle don't require a port designator
+    gw_comm_port = ""
+    #if sys.platform == 'win32':
+    #    gw_comm_port = "COM1"
+    #else:
+    #    gw_comm_port = "ttyS0"
+
     gw_file_name = "mydisk.scp"
     gw_folder_name = ""
     gw_dirty = False
@@ -150,6 +158,8 @@ class MainScreen(Screen):
             cmdline += "--scyl=" + self.ids.txtFirstCylToRead.text + " "
         if self.ids.chkLastCylToRead.active:
             cmdline += "--ecyl=" + self.ids.txtLastCylToRead.text + " "
+        if self.ids.chkSelectDriveRFD.active:
+            cmdline += "--drive=" + self.ids.txtSelectDriveRFD.text + " "
         if self.ids.tglSingleSidedRFD.state == "down":
             cmdline += "--single-sided "
         if sys.platform == 'win32':
@@ -172,6 +182,8 @@ class MainScreen(Screen):
             cmdline += "--ecyl=" + self.ids.txtLastCylToWrite.text + " "
         if self.ids.tglSingleSidedWTD.state == "down":
             cmdline += "--single-sided "
+        if self.ids.chkSelectDriveWTD.active:
+            cmdline += "--drive=" + self.ids.txtSelectDriveWTD.text + " "
         if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
@@ -294,6 +306,9 @@ class MainScreen(Screen):
             btn.bind(on_release=lambda x=btn:self.change_command_lines_port(x))
             box_layout.add_widget(btn)
 
+    def clear_port(self):
+        self.gw_comm_port = ""
+
     def find_str(self, s, char):
         index = 0
         if char in s:
@@ -374,7 +389,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.30 / Host Tools v0.8 - by Don Mankin"
+    title = "GreaseweazleGUI v0.32 / Host Tools v0.11 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI

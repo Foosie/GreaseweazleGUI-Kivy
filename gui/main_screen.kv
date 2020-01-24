@@ -6,7 +6,7 @@
 #
 # MIT License
 #
-# See the file LICENSE more details, or visit <https://opensource.org/licenses/MIT>.
+# See the file LICENSE for more details, or visit <https://opensource.org/licenses/MIT>.
 
 #: import Button kivy.uix.button.Button
 
@@ -24,6 +24,7 @@
         txtFirstCylToRead: txtFirstCylToRead
         chkLastCylToRead: chkLastCylToRead
         txtLastCylToRead: txtLastCylToRead
+        chkSelectDriveRFD: chkSelectDriveRFD
         tglSingleSidedRFD: tglSingleSidedRFD
 
         # write to disk
@@ -33,6 +34,7 @@
         txtFirstCylToWrite: txtFirstCylToWrite
         chkLastCylToWrite: chkLastCylToWrite
         txtLastCylToWrite: txtLastCylToWrite
+        txtSelectDriveWTD: txtSelectDriveWTD
         tglSingleSidedWTD: tglSingleSidedWTD
 
         # set delays
@@ -111,6 +113,19 @@
                         text: "79"
                         on_text: root.build_read_from_disk()
                         disabled: not chkLastCylToRead.active
+                    CheckBox:
+                        id: chkSelectDriveRFD
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "F7 Select Drive"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSelectDriveRFD
+                        text: "0"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkSelectDriveRFD.active
                 GridLayout:
                     rows: 1
                     cols: 3
@@ -187,6 +202,19 @@
                         text: "79"
                         disabled: not chkLastCylToWrite.active
                         on_text: root.build_write_to_disk()
+                    CheckBox:
+                        id: chkSelectDriveWTD
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "F7 Select Drive"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSelectDriveWTD
+                        text: "0"
+                        on_text: root.build_write_to_disk()
+                        disabled: not chkSelectDriveWTD.active
                 GridLayout:
                     rows: 1
                     cols: 2
@@ -329,3 +357,6 @@
                     Button:
                         text: "Refresh Available Ports"
                         on_release: root.create_comm_buttons(commButtonLayout)
+                    Button:
+                        text: "Clear Port"
+                        on_release: root.clear_port()
