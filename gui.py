@@ -162,7 +162,7 @@ class MainScreen(Screen):
             cmdline += "--drive=" + self.ids.txtSelectDriveRFD.text + " "
         if self.ids.tglSingleSidedRFD.state == "down":
             cmdline += "--single-sided "
-        if sys.platform == 'win32':
+        if (sys.platform == 'win32') or (sys.platform == 'darwin'):
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
@@ -184,7 +184,7 @@ class MainScreen(Screen):
             cmdline += "--single-sided "
         if self.ids.chkSelectDriveWTD.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveWTD.text + " "
-        if sys.platform == 'win32':
+        if (sys.platform == 'win32') or (sys.platform == 'darwin'):
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
@@ -205,7 +205,7 @@ class MainScreen(Screen):
             cmdline += "--motor=" + self.ids.txtDelayAfterMotorOn.text + " "
         if self.ids.chkDelayUntilAutoDeselect.active:
             cmdline += "--auto-off=" + self.ids.txtDelayUntilAutoDeselect.text + " "
-        if sys.platform == 'win32':
+        if (sys.platform == 'win32') or (sys.platform == 'darwin'):
             cmdline += self.gw_comm_port + "\""
         else:
             cmdline += self.gw_comm_port + ";read -n1\""
@@ -220,64 +220,71 @@ class MainScreen(Screen):
         if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
-            cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
+            if sys.platform == 'darwin':
+                cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
+            else:
+                cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineFirmware.text = cmdline
 
     def process_read_from_disk(self):
-        if sys.platform == 'win32':
-            if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineRFD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineRFD.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineRFD.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
         else:
-            if not self.checkIfProcessRunningByScript("gw.py"):
-                command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineRFD.text
-                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-            else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_write_to_disk(self):
-        if sys.platform == 'win32':
-            if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineWTD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineWTD.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineWTD.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
         else:
-            if not self.checkIfProcessRunningByScript("gw.py"):
-                command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineWTD.text
-                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-            else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_set_delays(self):
-        if sys.platform == 'win32':
-            if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineDelays.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineDelays.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineDelays.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
         else:
-            if not self.checkIfProcessRunningByScript("gw.py"):
-                command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineDelays.text
-                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-            else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_update_firmware(self):
-        if sys.platform == 'win32':
-            if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineFirmware.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineFirmware.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
         else:
-            if not self.checkIfProcessRunningByScript("gw.py"):
-                command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineFirmware.text
-                subprocess.Popen(command_line, shell=True, env=os.environ.copy())
-            else:
-                self.parent.parent.ids['screen_manager'].current = 'error_screen'
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_select_file_firmware(self):
         self.self.gw_dirty = True  # indicate we need a refresh
@@ -389,7 +396,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.32 / Host Tools v0.11 - by Don Mankin"
+    title = "GreaseweazleGUI v0.33 / Host Tools v0.11 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI

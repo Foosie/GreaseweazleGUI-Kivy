@@ -3,17 +3,18 @@ import psutil
 import getopt, sys
 
 print("")
+print("platform = "+sys.platform)
 p = psutil.Process(os.getpid())
-
-print("name = " + p.name())
 print("pid = "+ str(p.pid))
 
-str_args = "python "
+str_args = p.name() + " "
 for i in sys.argv:
     str_args = str_args + i + " "
+
 print("")
-print("Begining of text from gw.py")
+print("Begining-of-output from gw.py")
 print(str_args)
-print("End of text from gw.py")
+print("End-of-output from gw.py")
+print("")
 
 #input("Press Enter to continue...")
