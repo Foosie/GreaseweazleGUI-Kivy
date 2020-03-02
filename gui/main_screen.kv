@@ -140,11 +140,15 @@
                     Button:
                         id: btnSelectFolderRFD
                         text: "Select Folder"
-                        on_release: app.root.ids['screen_manager'].current = 'folder_dialog_screen'
+                        on_release:
+                            app.root.ids['screen_manager'].current = 'folder_dialog_screen'
+                            app.root.ids['screen_manager'].current_screen.set_dialog_mode(0)
                     Button:
                         id: btnSelectFileRFD
                         text: "Select File"
-                        on_release: app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                        on_release:
+                            app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                            app.root.ids['screen_manager'].current_screen.set_dialog_mode(0)
                 Button:
                     id: btnLaunchRFD
                     size_hint:1, 0.2
@@ -230,7 +234,9 @@
                     Button:
                         id: btnSelectFileWTD
                         text: "Select File"
-                        on_release: app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                        on_release:
+                            app.root.ids['screen_manager'].current = 'file_dialog_screen'
+                            app.root.ids['screen_manager'].current_screen.set_dialog_mode(1)
                 Button:
                     id: btnLaunchWTD
                     size_hint: 1,0.2
@@ -337,7 +343,9 @@
                 Button:
                     id: btnSelectFileFirmware
                     text: "Select File"
-                    on_release: app.root.ids['screen_manager'].current = 'file_update_dialog_screen'
+                    on_release:
+                        app.root.ids['screen_manager'].current = 'file_update_dialog_screen'
+                        app.root.ids['screen_manager'].current_screen.set_dialog_mode(2)
                 Button:
                     id: btnLaunchFirmware
                     text: "Launch"

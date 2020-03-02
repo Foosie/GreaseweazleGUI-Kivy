@@ -10,9 +10,6 @@
 
 
 from kivy.config import Config
-#Config.set('graphics', 'resizable', False)
-Config.set('graphics', 'width', '680')
-Config.set('graphics', 'height', '560')
 
 from kivy.lang import Builder
 from kivy.app import App
@@ -32,11 +29,16 @@ import psutil
 import ntpath
 import subprocess
 import os
+from pathlib import Path
+import configparser
 
 if sys.platform == 'win32':
     from subprocess import Popen, CREATE_NEW_CONSOLE
 else:
     from subprocess import Popen
+
+Config.set('graphics', 'width', '680')
+Config.set('graphics', 'height', '560')
 
 class MainScreen(Screen):
 
@@ -51,7 +53,6 @@ class MainScreen(Screen):
     chkSelectDriveRFD = ObjectProperty(CheckBox())
     txtSelectDriveRFD = ObjectProperty(TextInput())
     tglSingleSidedRFD = ObjectProperty(ToggleButton())
-    tglDoubleSidedRFD = ObjectProperty(ToggleButton())
 
     # write to disk
     txtCommandLineWTD = ObjectProperty(TextInput())
@@ -63,7 +64,6 @@ class MainScreen(Screen):
     chkSelectDriveWTD = ObjectProperty(CheckBox())
     txtSelectDriveWTD = ObjectProperty(TextInput())
     tglSingleSidedWTD = ObjectProperty(ToggleButton())
-    tglDoubleSidedWTD = ObjectProperty(ToggleButton())
 
     # set delays
     txtCommandLineDelays = ObjectProperty(TextInput())
@@ -80,10 +80,6 @@ class MainScreen(Screen):
     txtCommandLineFirmware = ObjectProperty(TextInput())
 
     # global variables
-    gw_commports = ObjectProperty(None)
-    gw_comm_port = ObjectProperty(None)
-    gw_file_name = ObjectProperty(None)
-    gw_folder_name = ObjectProperty(None)
     gw_application_folder = ObjectProperty(None)
     gw_dirty = BooleanProperty(None)
     gw_window_pid = ObjectProperty(None)
@@ -93,12 +89,14 @@ class MainScreen(Screen):
 
     # later versions of greaseweazle don't require a port designator
     gw_comm_port = ""
-    #if sys.platform == 'win32':
-    #    gw_comm_port = "COM1"
-    #else:
-    #    gw_comm_port = "ttyS0"
 
-    gw_file_name = "mydisk.scp"
+    gw_iniFilespec = "./gui.ini"
+    gw_RFDFilename = "mydisk.scp"
+    gw_RFDFolder = "./"
+    gw_WTDFilename = "mydisk.scp"
+    gw_WTDFolder = "./"
+    gw_UpdateFWFilename = "Greaseweazle-v0.6.upd"
+    gw_UpdateFWFolder = "./"
     gw_folder_name = ""
     gw_dirty = False
     gw_window_pid = -1
@@ -147,7 +145,7 @@ class MainScreen(Screen):
         self.gw_dirty = True
 
     def build_read_from_disk(self):
-        file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
+        file_spec = os.path.join(self.main_screen.gw_RFDFolder, self.main_screen.gw_RFDFilename)
         if sys.platform == 'win32':
             cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
         else:
@@ -169,7 +167,7 @@ class MainScreen(Screen):
         self.ids.txtCommandLineRFD.text = cmdline
 
     def build_write_to_disk(self):
-        file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
+        file_spec = os.path.join(self.main_screen.gw_WTDFolder, self.main_screen.gw_WTDFilename)
         if sys.platform == 'win32':
             cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" write "
         else:
@@ -212,7 +210,7 @@ class MainScreen(Screen):
         self.ids.txtCommandLineDelays.text = cmdline
 
     def build_update_firmware(self):
-        file_spec = os.path.join(self.gw_folder_name, self.gw_file_name)
+        file_spec = os.path.join(self.main_screen.gw_UpdateFWFolder, self.main_screen.gw_UpdateFWFilename)
         if sys.platform == 'win32':
             cmdline = "python \"" + self.gw_application_folder + "gw.py\" update "
         else:
@@ -228,6 +226,7 @@ class MainScreen(Screen):
 
     def process_read_from_disk(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
             if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineRFD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -243,6 +242,7 @@ class MainScreen(Screen):
 
     def process_write_to_disk(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
             if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineWTD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -258,6 +258,7 @@ class MainScreen(Screen):
 
     def process_set_delays(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
             if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineDelays.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -273,6 +274,7 @@ class MainScreen(Screen):
 
     def process_update_firmware(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
             if sys.platform == 'win32':
                 command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
@@ -347,6 +349,204 @@ class MainScreen(Screen):
                 pass
         return False
 
+    def ini_read(self, section, option, filespec):
+        config = configparser.ConfigParser()
+
+        if (len(config.read(filespec)) == 0):
+            print("\nERROR - cannot open " + filespec + "\n")
+            sys.exit(1)
+
+        if (config.has_section(section) == False):
+            print("\nERROR - section [" + section + "] does not exist in " + filespec + "\n")
+            sys.exit(1)
+
+        if (config.has_option(section, option) == False):
+            print("\nERROR - option " + option + " does not exist in section [" + section + "]\n")
+            sys.exit(1)
+
+        print(config.get(section, option))
+
+    def iniWriteFile(self):
+
+        config = configparser.ConfigParser()
+
+        # read from disk
+        config.add_section('gbReadFromDisk')
+        config.set('gbReadFromDisk', 'txtCommandLineRFD', self.ids.txtCommandLineRFD.text)
+        config.set('gbReadFromDisk', 'gw_RFDFilename', self.main_screen.gw_RFDFilename)
+        config.set('gbReadFromDisk', 'gw_RFDFolder', self.main_screen.gw_RFDFolder)
+        if self.ids.chkRevsPerTrack.active:
+            config.set('gbReadFromDisk', 'chkRevsPerTrack',  'True')
+        else:
+            config.set('gbReadFromDisk', 'chkRevsPerTrack',  'False')
+        config.set('gbReadFromDisk', 'txtRevsPerTrack', self.ids.txtRevsPerTrack.text)
+        if self.ids.chkFirstCylToRead.active:
+            config.set('gbReadFromDisk', 'chkFirstCylToRead', 'True')
+        else:
+            config.set('gbReadFromDisk', 'chkFirstCylToRead', 'False')
+        config.set('gbReadFromDisk', 'txtFirstCylToRead', self.ids.txtFirstCylToRead.text)
+        if self.ids.chkLastCylToRead.active:
+            config.set('gbReadFromDisk', 'chkLastCylToRead', 'True')
+        else:
+            config.set('gbReadFromDisk', 'chkLastCylToRead', 'False')
+        config.set('gbReadFromDisk', 'txtLastCylToRead', self.ids.txtLastCylToRead.text)
+        if self.ids.chkSelectDriveRFD.active:
+            config.set('gbReadFromDisk', 'chkSelectDriveRFD', 'True')
+        else:
+            config.set('gbReadFromDisk', 'chkSelectDriveRFD', 'False')
+        config.set('gbReadFromDisk', 'txtSelectDriveRFD', self.ids.txtSelectDriveRFD.text)
+        if self.ids.tglSingleSidedRFD.state == "down":
+            config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'True')
+        else:
+            config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'False')
+
+        # write to disk
+        config.add_section('gbWriteToDisk')
+        config.set('gbWriteToDisk', 'txtCommandLineWTD', self.ids.txtCommandLineWTD.text)
+        config.set('gbWriteToDisk', 'gw_WTDFilename', self.main_screen.gw_WTDFilename)
+        config.set('gbWriteToDisk', 'gw_WTDFolder', self.main_screen.gw_WTDFolder)
+        if self.ids.chkAdjustSpeed.active:
+            config.set('gbWriteToDisk', 'chkAdjustSpeed', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkAdjustSpeed', 'False')
+        if self.ids.chkFirstCylToWrite.active:
+            config.set('gbWriteToDisk', 'chkFirstCylToWrite', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkFirstCylToWrite', 'False')
+        config.set('gbWriteToDisk', 'txtFirstCylToWrite', self.ids.txtFirstCylToWrite.text)
+        if self.ids.chkLastCylToWrite.active:
+            config.set('gbWriteToDisk', 'chkLastCylToWrite', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkLastCylToWrite', 'False')
+        config.set('gbWriteToDisk', 'txtLastCylToWrite', self.ids.txtLastCylToWrite.text)
+        if self.ids.chkSelectDriveWTD.active:
+            config.set('gbWriteToDisk', 'chkSelectDriveWTD', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkSelectDriveWTD', 'False')
+        config.set('gbWriteToDisk', 'txtSelectDriveWTD', self.ids.txtSelectDriveWTD.text)
+        if self.ids.tglSingleSidedWTD.state == "down":
+            config.set('gbWriteToDisk', 'tglSingleSidedWTD', 'True')
+        else:
+            config.set('gbWriteToDisk', 'tglSingleSidedWTD', 'False')
+
+        # set delays
+        config.add_section('gbSetDelays')
+        config.set('gbSetDelays', 'txtCommandLineDelays', self.ids.txtCommandLineDelays.text)
+        if self.ids.chkDelayAfterSelect.active:
+            config.set('gbSetDelays', 'chkDelayAfterSelect', 'True')
+        else:
+            config.set('gbSetDelays', 'chkDelayAfterSelect', 'False')
+        config.set('gbSetDelays', 'txtDelayAfterSelect', self.ids.txtDelayAfterSelect.text)
+        if self.ids.chkDelayBetweenSteps.active:
+            config.set('gbSetDelays', 'chkDelayBetweenSteps', 'True')
+        else:
+            config.set('gbSetDelays', 'chkDelayBetweenSteps', 'False')
+        config.set('gbSetDelays', 'txtDelayBetweenSteps', self.ids.txtDelayBetweenSteps.text)
+        if self.ids.chkSettleDelayAfterSeek.active:
+            config.set('gbSetDelays', 'chkSettleDelayAfterSeek', 'True')
+        else:
+            config.set('gbSetDelays', 'chkSettleDelayAfterSeek', 'False')
+        config.set('gbSetDelays', 'txtSettleDelayAfterSeek', self.ids.txtSettleDelayAfterSeek.text)
+        if self.ids.chkDelayAfterMotorOn.active:
+            config.set('gbSetDelays', 'chkDelayAfterMotorOn', 'True')
+        else:
+            config.set('gbSetDelays', 'chkDelayAfterMotorOn', 'False')
+        config.set('gbSetDelays', 'txtDelayAfterMotorOn', self.ids.txtDelayAfterMotorOn.text)
+        if self.ids.chkDelayUntilAutoDeselect.active:
+            config.set('gbSetDelays', 'chkDelayUntilAutoDeselect', 'True')
+        else:
+            config.set('gbSetDelays', 'chkDelayUntilAutoDeselect', 'False')
+        config.set('gbSetDelays', 'txtDelayUntilAutoDeselect', self.ids.txtDelayUntilAutoDeselect.text)
+
+        # update firmware
+        config.add_section('gbUpdateFirmware')
+        config.set('gbUpdateFirmware', 'txtCommandLineFirmware', self.ids.txtCommandLineFirmware.text)
+        config.set('gbUpdateFirmware', 'gw_UpdateFWFilename', self.main_screen.gw_UpdateFWFilename)
+        config.set('gbUpdateFirmware', 'gw_UpdateFWFolder', self.main_screen.gw_UpdateFWFolder)
+
+        # write the file
+        with open(self.gw_iniFilespec, 'w') as configfile:
+            config.write(configfile)
+
+    def iniReadFile(self):
+        config = configparser.ConfigParser()
+        if (len(config.read(self.gw_iniFilespec)) == 0):
+            print("\nDoesn't yet exist " + self.gw_iniFilespec + "\n")
+            return
+
+        # read from disk
+        self.main_screen.gw_RFDFilename = config.get('gbReadFromDisk', 'gw_RFDFilename')
+        self.main_screen.gw_RFDFolder = config.get('gbReadFromDisk', 'gw_RFDFolder')
+        state = config.get('gbReadFromDisk', 'chkRevsPerTrack')
+        if state == 'True':
+            self.ids.chkRevsPerTrack.active = True
+        self.ids.txtRevsPerTrack.text = config.get('gbReadFromDisk', 'txtRevsPerTrack')
+        state = config.get('gbReadFromDisk', 'chkFirstCylToRead')
+        if state == 'True':
+            self.ids.chkFirstCylToRead.active = True
+        self.ids.txtFirstCylToRead.text = config.get('gbReadFromDisk', 'txtFirstCylToRead')
+        state = config.get('gbReadFromDisk', 'chkLastCylToRead')
+        if state == 'True':
+            self.ids.chkLastCylToRead.active = True
+        self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
+        state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
+        if state == 'True':
+            self.ids.chkSelectDriveRFD.active = True
+        self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
+        state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
+        if state == 'Down':
+            self.ids.tglSingleSidedRFD.state = 'down'
+
+        # write to disk
+        self.main_screen.gw_WTDFilename = config.get('gbWriteToDisk', 'gw_WTDFilename')
+        self.main_screen.gw_WTDFolder = config.get('gbWriteToDisk', 'gw_WTDFolder')
+        state = config.get('gbWriteToDisk', 'chkAdjustSpeed')
+        if state == 'True':
+            self.ids.chkAdjustSpeed.active = True
+        state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
+        if state == 'True':
+            self.ids.chkFirstCylToWrite.active = True
+        self.ids.txtFirstCylToWrite.text = config.get('gbWriteToDisk', 'txtFirstCylToWrite')
+        state = config.get('gbWriteToDisk', 'chkLastCylToWrite')
+        if state == 'True':
+            self.ids.chkLastCylToWrite.active = True
+        self.ids.txtLastCylToWrite.text = config.get('gbWriteToDisk', 'txtLastCylToWrite')
+        state = config.get('gbWriteToDisk', 'chkSelectDriveWTD')
+        if state == 'True':
+            self.ids.chkSelectDriveWTD.active = True
+        self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
+        state = config.get('gbWriteToDisk', 'tglSingleSidedWTD')
+        if state == 'True':
+            self.ids.tglSingleSidedWTD.active = True
+
+        # set delays
+        self.ids.txtCommandLineDelays.text = config.get('gbSetDelays', 'txtCommandLineDelays')
+        state = config.get('gbSetDelays', 'chkDelayAfterSelect')
+        if state == 'True':
+            self.ids.chkDelayAfterSelect.active = True
+        self.ids.txtDelayAfterSelect.text = config.get('gbSetDelays', 'txtDelayAfterSelect')
+        state = config.get('gbSetDelays', 'chkDelayBetweenSteps')
+        if state == 'True':
+            self.ids.chkDelayBetweenSteps.active = True
+        self.ids.txtDelayBetweenSteps.text = config.get('gbSetDelays', 'txtDelayBetweenSteps')
+
+        state = config.get('gbSetDelays', 'chkSettleDelayAfterSeek')
+        if state == 'True':
+            self.ids.chkSettleDelayAfterSeek.active = True
+        self.ids.txtSettleDelayAfterSeek.text = config.get('gbSetDelays', 'txtSettleDelayAfterSeek')
+        state = config.get('gbSetDelays', 'chkDelayAfterMotorOn')
+        if state == 'True':
+            self.ids.chkDelayAfterMotorOn.active = True
+        self.ids.txtDelayAfterMotorOn.text = config.get('gbSetDelays', 'txtDelayAfterMotorOn')
+        state = config.get('gbSetDelays', 'chkDelayUntilAutoDeselect')
+        if state == 'True':
+            self.ids.chkDelayUntilAutoDeselect.active = True
+        self.ids.txtDelayUntilAutoDeselect.text = config.get('gbSetDelays', 'txtDelayUntilAutoDeselect')
+
+        # update firmware
+        self.main_screen.gw_UpdateFWFilename = config.get('gbUpdateFirmware', 'gw_UpdateFWFilename')
+        self.main_screen.gw_UpdateFWFolder = config.get('gbUpdateFirmware', 'gw_UpdateFWFolder')
+
     def __init__(self, **kwargs):
         super(Screen, self).__init__(**kwargs)
         self.main_screen = MainScreen
@@ -360,12 +560,29 @@ class FileDialogScreen(Screen):
     def __init__(self, **kwargs):
         super(Screen, self).__init__(**kwargs)
         self.main_screen = MainScreen
+        self.dialog_mode = 0  # 0 = RFD, 1 = WTD, 2 = UpdateFirmware
+
+    def set_dialog_mode(self, mode):
+        self.dialog_mode = mode
+
+    def get_dialog_mode(self):
+        return self.dialog_mode
 
     def set_file_name(self, fn):
+        if len(fn) == 0:
+            return
         head, tail = ntpath.split(fn)
-        self.main_screen.gw_folder_name = head
-        self.main_screen.gw_file_name = tail
-        self.main_screen.gw_file_spec = fn
+        mode = self.get_dialog_mode()
+        print('mode = ' + str(mode))
+        if mode == 0:  # RFD
+            self.main_screen.gw_RFDFolder = head
+            self.main_screen.gw_RFDFilename = tail
+        if mode == 1:  # WTD
+            self.main_screen.gw_WTDFolder = head
+            self.main_screen.gw_WTDFilename = tail
+        if mode == 2:  # FW
+            self.main_screen.gw_UpdateFWFolder = head
+            self.main_screen.gw_UpdateFWFilename = tail
         self.main_screen.gw_dirty = True
 
 class FileUpdateDialogScreen(Screen):
@@ -373,12 +590,29 @@ class FileUpdateDialogScreen(Screen):
     def __init__(self, **kwargs):
         super(Screen, self).__init__(**kwargs)
         self.main_screen = MainScreen
+        self.dialog_mode = 0  # 0 = RFD, 1 = WTD, 2 = UpdateFirmware
+
+    def set_dialog_mode(self, mode):
+        self.dialog_mode = mode
+
+    def get_dialog_mode(self):
+        return self.dialog_mode
 
     def set_file_name(self, fn):
+        if len(fn) == 0:
+            return
         head, tail = ntpath.split(fn)
-        self.main_screen.gw_folder_name = head
-        self.main_screen.gw_file_name = tail
-        self.main_screen.gw_file_spec = fn
+        mode = self.get_dialog_mode()
+        print('mode = ' + str(mode))
+        if mode == 0:  # RFD
+            self.main_screen.gw_RFDFolder = head
+            self.main_screen.gw_RFDFilename = tail
+        if mode == 1:  # WTD
+            self.main_screen.gw_WTDFolder = head
+            self.main_screen.gw_WTDFilename = tail
+        if mode == 2:  # FW
+            self.main_screen.gw_UpdateFWFolder = head
+            self.main_screen.gw_UpdateFWFilename = tail
         self.main_screen.gw_dirty = True
 
 class FolderDialogScreen(Screen):
@@ -386,9 +620,25 @@ class FolderDialogScreen(Screen):
     def __init__(self, **kwargs):
         super(Screen, self).__init__(**kwargs)
         self.main_screen = MainScreen
+        self.dialog_mode = 0  # 0 = RFD, 1 = WTD, 2 = UpdateFirmware
+
+    def set_dialog_mode(self, mode):
+        self.dialog_mode = mode
+
+    def get_dialog_mode(self):
+        return self.dialog_mode
 
     def set_folder_name(self, fn):
-        self.main_screen.gw_folder_name = fn
+        if len(fn) == 0:
+            return
+        mode = self.get_dialog_mode()
+        print('mode = ' + str(mode))
+        if mode == 0:  # RFD
+            self.main_screen.gw_RFDFolder = fn
+        if mode == 1:  # WTD
+            self.main_screen.gw_WTDFolder = fn
+        if mode == 2:  # FW
+            self.main_screen.gw_UpdateFWFolder = fn
         self.main_screen.gw_dirty = True
 
 class ErrorScreen(Screen):
@@ -396,18 +646,23 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.33 / Host Tools v0.11 - by Don Mankin"
+    title = "GreaseweazleGUI v0.34 / Host Tools v0.11 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI
     def change_screen(self, screen_name):
         screen_manager = self.root.ids['screen_manager']
         screen_manager.current = screen_name
+
+    def on_start(self, **kwargs):
+        main_screen = self.root.ids['main_screen']
+        main_screen.iniReadFile()
+
     def on_request_close(self, *args):
         main_screen = self.root.ids['main_screen']
-        screen_manager = self.root.ids['screen_manager']
+        main_screen.iniWriteFile()
         if main_screen.checkIfProcessRunningByScript("gw.py"):
-            screen_manager.current = 'error_screen'
+            self.root.ids['screen_manager'].current = 'error_screen'
             return True
         else:
             return False
