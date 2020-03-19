@@ -53,6 +53,7 @@ class MainScreen(Screen):
     chkSelectDriveRFD = ObjectProperty(CheckBox())
     txtSelectDriveRFD = ObjectProperty(TextInput())
     tglSingleSidedRFD = ObjectProperty(ToggleButton())
+    chkDoubleStepRFD = ObjectProperty(CheckBox())
 
     # write to disk
     txtCommandLineWTD = ObjectProperty(TextInput())
@@ -78,6 +79,15 @@ class MainScreen(Screen):
 
     # update firmware
     txtCommandLineFirmware = ObjectProperty(TextInput())
+
+    # pin level
+    txtPinLevel = ObjectProperty(TextInput())
+    chkHighLevel = ObjectProperty(CheckBox())
+    chkLowLevel = ObjectProperty(CheckBox())
+    txtCommandLinePinLevel = ObjectProperty(TextInput())
+
+    # reset
+    txtCommandLineReset = ObjectProperty(TextInput())
 
     # global variables
     gw_application_folder = ObjectProperty(None)
@@ -150,6 +160,8 @@ class MainScreen(Screen):
             cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' read "
+        if self.ids.chkDoubleStepRFD.active:
+            cmdline += "--double-step "
         if self.ids.chkRevsPerTrack.active:
             cmdline += "--revs=" + self.ids.txtRevsPerTrack.text + " "
         if self.ids.chkFirstCylToRead.active:
@@ -224,6 +236,31 @@ class MainScreen(Screen):
                 cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineFirmware.text = cmdline
 
+    def build_pin_level(self):
+        if sys.platform == 'win32':
+            cmdline = "python \"" + self.gw_application_folder + "gw.py\" pin "
+        else:
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' pin "
+        cmdline += self.ids.txtPinLevel.text
+        if self.ids.chkHighLevel.active == 'True':
+            cmdline += " H"
+        else:
+            cmdline += " L"
+        if (len(self.gw_comm_port) > 0):
+            if sys.platform == 'win32' or sys.platform == 'darwin':
+                cmdline += " " + self.gw_comm_port + "\""
+            else:
+                cmdline += " " + self.gw_comm_port + ";read -n1\""
+        self.ids.txtCommandLinePinLevel.text = cmdline
+
+    def build_reset(self):
+        cmdline = "python \"" + self.gw_application_folder + "gw.py\" reset "
+        if sys.platform == 'win32' or sys.platform == 'darwin':
+            cmdline += self.gw_comm_port + "\""
+        else:
+            cmdline += self.gw_comm_port + ";read -n1\""
+        self.ids.txtCommandLineReset.text = cmdline
+
     def process_read_from_disk(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
             self.iniWriteFile()
@@ -288,6 +325,39 @@ class MainScreen(Screen):
         else:
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
+    def process_pin_level(self):
+        self.build_pin_level()
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
+            if sys.platform == 'win32':
+                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLinePinLevel.text
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
+            else:
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLinePinLevel.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLinePinLevel.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+        else:
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
+
+    def process_reset(self):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
+            if sys.platform == 'win32':
+                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineReset.text
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
+            else:
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineReset.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineReset.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+        else:
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
+
     def process_select_file_firmware(self):
         self.self.gw_dirty = True  # indicate we need a refresh
 
@@ -302,6 +372,12 @@ class MainScreen(Screen):
 
     def got_focus_update_firmware(self):
         self.build_update_firmware()
+
+    def got_focus_pin_level(self):
+        self.build_pin_level()
+
+    def got_focus_reset(self):
+        self.build_reset()
 
     def got_focus_configuration(self, box_layout):
         self.create_comm_buttons(box_layout)
@@ -375,6 +451,10 @@ class MainScreen(Screen):
         config.set('gbReadFromDisk', 'txtCommandLineRFD', self.ids.txtCommandLineRFD.text)
         config.set('gbReadFromDisk', 'gw_RFDFilename', self.main_screen.gw_RFDFilename)
         config.set('gbReadFromDisk', 'gw_RFDFolder', self.main_screen.gw_RFDFolder)
+        if self.ids.chkDoubleStepRFD.active:
+            config.set('gbReadFromDisk', 'chkDoubleStepRFD', 'True')
+        else:
+            config.set('gbReadFromDisk', 'chkDoubleStepRFD', 'False')
         if self.ids.chkRevsPerTrack.active:
             config.set('gbReadFromDisk', 'chkRevsPerTrack',  'True')
         else:
@@ -464,6 +544,23 @@ class MainScreen(Screen):
         config.set('gbUpdateFirmware', 'gw_UpdateFWFilename', self.main_screen.gw_UpdateFWFilename)
         config.set('gbUpdateFirmware', 'gw_UpdateFWFolder', self.main_screen.gw_UpdateFWFolder)
 
+        # pin level
+        config.add_section('gbPinLevel')
+        if self.ids.chkHighLevel.active:
+            config.set('gbPinLevel', 'chkHighLevel', 'True')
+        else:
+            config.set('gbPinLevel', 'chkHighLevel', 'False')
+        if self.ids.chkLowLevel.active:
+            config.set('gbPinLevel', 'chkLowLevel', 'True')
+        else:
+            config.set('gbPinLevel', 'chkLowLevel', 'False')
+        config.set('gbPinLevel', 'txtPinLevel', self.ids.txtPinLevel.text)
+        config.set('gbPinLevel', 'txtCommandLinePinLevel', self.ids.txtCommandLinePinLevel.text)
+
+        # reset
+        config.add_section('gbReset')
+        config.set('gbReset', 'txtCommandLineReset', self.ids.txtCommandLineReset.text)
+
         # write the file
         with open(self.gw_iniFilespec, 'w') as configfile:
             config.write(configfile)
@@ -474,78 +571,101 @@ class MainScreen(Screen):
             print("\nDoesn't yet exist " + self.gw_iniFilespec + "\n")
             return
 
-        # read from disk
-        self.main_screen.gw_RFDFilename = config.get('gbReadFromDisk', 'gw_RFDFilename')
-        self.main_screen.gw_RFDFolder = config.get('gbReadFromDisk', 'gw_RFDFolder')
-        state = config.get('gbReadFromDisk', 'chkRevsPerTrack')
-        if state == 'True':
-            self.ids.chkRevsPerTrack.active = True
-        self.ids.txtRevsPerTrack.text = config.get('gbReadFromDisk', 'txtRevsPerTrack')
-        state = config.get('gbReadFromDisk', 'chkFirstCylToRead')
-        if state == 'True':
-            self.ids.chkFirstCylToRead.active = True
-        self.ids.txtFirstCylToRead.text = config.get('gbReadFromDisk', 'txtFirstCylToRead')
-        state = config.get('gbReadFromDisk', 'chkLastCylToRead')
-        if state == 'True':
-            self.ids.chkLastCylToRead.active = True
-        self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
-        state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
-        if state == 'True':
-            self.ids.chkSelectDriveRFD.active = True
-        self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
-        state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
-        if state == 'Down':
-            self.ids.tglSingleSidedRFD.state = 'down'
+        try:
 
-        # write to disk
-        self.main_screen.gw_WTDFilename = config.get('gbWriteToDisk', 'gw_WTDFilename')
-        self.main_screen.gw_WTDFolder = config.get('gbWriteToDisk', 'gw_WTDFolder')
-        state = config.get('gbWriteToDisk', 'chkAdjustSpeed')
-        if state == 'True':
-            self.ids.chkAdjustSpeed.active = True
-        state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
-        if state == 'True':
-            self.ids.chkFirstCylToWrite.active = True
-        self.ids.txtFirstCylToWrite.text = config.get('gbWriteToDisk', 'txtFirstCylToWrite')
-        state = config.get('gbWriteToDisk', 'chkLastCylToWrite')
-        if state == 'True':
-            self.ids.chkLastCylToWrite.active = True
-        self.ids.txtLastCylToWrite.text = config.get('gbWriteToDisk', 'txtLastCylToWrite')
-        state = config.get('gbWriteToDisk', 'chkSelectDriveWTD')
-        if state == 'True':
-            self.ids.chkSelectDriveWTD.active = True
-        self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
-        state = config.get('gbWriteToDisk', 'tglSingleSidedWTD')
-        if state == 'True':
-            self.ids.tglSingleSidedWTD.active = True
+            # read from disk
+            self.main_screen.gw_RFDFilename = config.get('gbReadFromDisk', 'gw_RFDFilename')
+            self.main_screen.gw_RFDFolder = config.get('gbReadFromDisk', 'gw_RFDFolder')
+            state = config.get('gbReadFromDisk', 'chkDoubleStepRFD')
+            if state == 'True':
+                self.ids.chkDoubleStepRFD.active = True
+            state = config.get('gbReadFromDisk', 'chkRevsPerTrack')
+            if state == 'True':
+                self.ids.chkRevsPerTrack.active = True
+            self.ids.txtRevsPerTrack.text = config.get('gbReadFromDisk', 'txtRevsPerTrack')
+            state = config.get('gbReadFromDisk', 'chkFirstCylToRead')
+            if state == 'True':
+                self.ids.chkFirstCylToRead.active = True
+            self.ids.txtFirstCylToRead.text = config.get('gbReadFromDisk', 'txtFirstCylToRead')
+            state = config.get('gbReadFromDisk', 'chkLastCylToRead')
+            if state == 'True':
+                self.ids.chkLastCylToRead.active = True
+            self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
+            state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
+            if state == 'True':
+                self.ids.chkSelectDriveRFD.active = True
+            self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
+            state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
+            if state == 'Down':
+                self.ids.tglSingleSidedRFD.state = 'down'
 
-        # set delays
-        self.ids.txtCommandLineDelays.text = config.get('gbSetDelays', 'txtCommandLineDelays')
-        state = config.get('gbSetDelays', 'chkDelayAfterSelect')
-        if state == 'True':
-            self.ids.chkDelayAfterSelect.active = True
-        self.ids.txtDelayAfterSelect.text = config.get('gbSetDelays', 'txtDelayAfterSelect')
-        state = config.get('gbSetDelays', 'chkDelayBetweenSteps')
-        if state == 'True':
-            self.ids.chkDelayBetweenSteps.active = True
-        self.ids.txtDelayBetweenSteps.text = config.get('gbSetDelays', 'txtDelayBetweenSteps')
+            # write to disk
+            self.main_screen.gw_WTDFilename = config.get('gbWriteToDisk', 'gw_WTDFilename')
+            self.main_screen.gw_WTDFolder = config.get('gbWriteToDisk', 'gw_WTDFolder')
+            state = config.get('gbWriteToDisk', 'chkAdjustSpeed')
+            if state == 'True':
+                self.ids.chkAdjustSpeed.active = True
+            state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
+            if state == 'True':
+                self.ids.chkFirstCylToWrite.active = True
+            self.ids.txtFirstCylToWrite.text = config.get('gbWriteToDisk', 'txtFirstCylToWrite')
+            state = config.get('gbWriteToDisk', 'chkLastCylToWrite')
+            if state == 'True':
+                self.ids.chkLastCylToWrite.active = True
+            self.ids.txtLastCylToWrite.text = config.get('gbWriteToDisk', 'txtLastCylToWrite')
+            state = config.get('gbWriteToDisk', 'chkSelectDriveWTD')
+            if state == 'True':
+                self.ids.chkSelectDriveWTD.active = True
+            self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
+            state = config.get('gbWriteToDisk', 'tglSingleSidedWTD')
+            if state == 'True':
+                self.ids.tglSingleSidedWTD.active = True
 
-        state = config.get('gbSetDelays', 'chkSettleDelayAfterSeek')
-        if state == 'True':
-            self.ids.chkSettleDelayAfterSeek.active = True
-        self.ids.txtSettleDelayAfterSeek.text = config.get('gbSetDelays', 'txtSettleDelayAfterSeek')
-        state = config.get('gbSetDelays', 'chkDelayAfterMotorOn')
-        if state == 'True':
-            self.ids.chkDelayAfterMotorOn.active = True
-        self.ids.txtDelayAfterMotorOn.text = config.get('gbSetDelays', 'txtDelayAfterMotorOn')
-        state = config.get('gbSetDelays', 'chkDelayUntilAutoDeselect')
-        if state == 'True':
-            self.ids.chkDelayUntilAutoDeselect.active = True
-        self.ids.txtDelayUntilAutoDeselect.text = config.get('gbSetDelays', 'txtDelayUntilAutoDeselect')
+            # set delays
+            self.ids.txtCommandLineDelays.text = config.get('gbSetDelays', 'txtCommandLineDelays')
+            state = config.get('gbSetDelays', 'chkDelayAfterSelect')
+            if state == 'True':
+                self.ids.chkDelayAfterSelect.active = True
+            self.ids.txtDelayAfterSelect.text = config.get('gbSetDelays', 'txtDelayAfterSelect')
+            state = config.get('gbSetDelays', 'chkDelayBetweenSteps')
+            if state == 'True':
+                self.ids.chkDelayBetweenSteps.active = True
+            self.ids.txtDelayBetweenSteps.text = config.get('gbSetDelays', 'txtDelayBetweenSteps')
 
-        # update firmware
-        self.main_screen.gw_UpdateFWFilename = config.get('gbUpdateFirmware', 'gw_UpdateFWFilename')
-        self.main_screen.gw_UpdateFWFolder = config.get('gbUpdateFirmware', 'gw_UpdateFWFolder')
+            state = config.get('gbSetDelays', 'chkSettleDelayAfterSeek')
+            if state == 'True':
+                self.ids.chkSettleDelayAfterSeek.active = True
+            self.ids.txtSettleDelayAfterSeek.text = config.get('gbSetDelays', 'txtSettleDelayAfterSeek')
+            state = config.get('gbSetDelays', 'chkDelayAfterMotorOn')
+            if state == 'True':
+                self.ids.chkDelayAfterMotorOn.active = True
+            self.ids.txtDelayAfterMotorOn.text = config.get('gbSetDelays', 'txtDelayAfterMotorOn')
+            state = config.get('gbSetDelays', 'chkDelayUntilAutoDeselect')
+            if state == 'True':
+                self.ids.chkDelayUntilAutoDeselect.active = True
+            self.ids.txtDelayUntilAutoDeselect.text = config.get('gbSetDelays', 'txtDelayUntilAutoDeselect')
+
+            # update firmware
+            self.main_screen.gw_UpdateFWFilename = config.get('gbUpdateFirmware', 'gw_UpdateFWFilename')
+            self.main_screen.gw_UpdateFWFolder = config.get('gbUpdateFirmware', 'gw_UpdateFWFolder')
+
+            # pin level
+            self.ids.txtCommandLinePinLevel.text = config.get('gbPinLevel', 'txtCommandLinePinLevel')
+            self.ids.txtPinLevel.text = config.get('gbPinLevel', 'txtPinLevel')
+            state = config.get('gbPinLevel', 'chkHighLevel')
+            if state == 'True':
+                self.ids.chkHighLevel.active = True
+            state = config.get('gbPinLevel', 'chkLowLevel')
+            if state == 'True':
+                self.ids.chkLowLevel.active = True
+
+            # reset - nothing to do
+
+        except:
+            # assume one of the entries don't exist in an old format file
+            # so lets delete the old on and start over
+            print("\nDeleting old file " + self.gw_iniFilespec + "\n")
+            os.remove(self.gw_iniFilespec)
 
     def __init__(self, **kwargs):
         super(Screen, self).__init__(**kwargs)
@@ -646,7 +766,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.34 / Host Tools v0.11 - by Don Mankin"
+    title = "GreaseweazleGUI v0.35 / Host Tools v0.12 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI

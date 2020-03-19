@@ -26,6 +26,7 @@
         txtLastCylToRead: txtLastCylToRead
         chkSelectDriveRFD: chkSelectDriveRFD
         tglSingleSidedRFD: tglSingleSidedRFD
+        chkDoubleStepRFD: chkDoubleStepRFD
 
         # write to disk
         txtCommandLineWTD: txtCommandLineWTD
@@ -51,13 +52,22 @@
         # update firmware
         txtCommandLineFirmware: txtCommandLineFirmware
 
+        # pin level
+        txtPinLevel: txtPinLevel
+        chkHighLevel: chkHighLevel
+        chkLowLevel: chkLowLevel
+        txtCommandLinePinLevel: txtCommandLinePinLevel
+
+        # reset
+        txtCommandLineReset: txtCommandLineReset
+
         # creating the size
         # and the alignment of the tab
         size_hint: 1, 1
         pos_hint: {'center_x': .5, 'center_y': .5}
 
         do_default_tab: False
-        tab_width: self.width / 5
+        tab_width: self.width / 7
 
         # READ FROM DISK
         FocusTabbedPanelItem:
@@ -70,10 +80,20 @@
                     size_hint: 1,0.5
                     text: "python. gw.py read --revs=3 --scyl=0 --ecyl=34 --single-sided '/home/user/mydisk.scp' COM1"
                 GridLayout:
-                    rows: 6
+                    rows: 7
                     cols: 3
                     padding: 10
                     spacing: 10
+                    CheckBox:
+                        id: chkDoubleStepRFD
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "Double-Step"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    Label:
+                        text: " "
                     CheckBox:
                         id: chkRevsPerTrack
                         on_release: root.build_read_from_disk()
@@ -332,7 +352,7 @@
 
         # UPDATE FIRMWARE
         FocusTabbedPanelItem:
-            text: ' Update Firmware '
+            text: ' Upd. Firmware '
             on_focus: if self.focus: root.got_focus_update_firmware()
             BoxLayout:
                 orientation: "vertical"
@@ -351,9 +371,77 @@
                     text: "Launch"
                     on_release:root.process_update_firmware()
 
-       # CONFIGURATION
+        # PIN LEVEL
         FocusTabbedPanelItem:
-            text: ' Port '
+            text: ' Pin Level '
+            # on_focus: if self.focus: root.got_focus_pin_level()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLinePinLevel
+                    size_hint: 1,0.5
+                    text: "python.exe gw.py pin L COM11"
+                GridLayout:
+                    rows: 2
+                    cols: 4
+                    padding: 10
+                    spacing: 10
+                    Label:
+                        text: " "
+                        text_size: self.size
+                    Label:
+                        text: "Selected Pin"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id:txtPinLevel
+                        size_hint: 1,0.5
+                        text: "22"
+                    Label:
+                        text: " "
+                        text_size: self.size
+                    CheckBox:
+                        id: chkHighLevel
+                        group: "PinLevel"
+                        on_release: root.build_pin_level()
+                    Label:
+                        text: "High Level"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    CheckBox:
+                        id: chkLowLevel
+                        group: "PinLevel"
+                        on_release: root.build_pin_level()
+                    Label:
+                        text: "Low Level"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                Button:
+                    id: btnLaunchPinLevel
+                    text: "Launch"
+                    on_release:root.process_pin_level()
+
+        # RESET
+        FocusTabbedPanelItem:
+            text: ' Reset '
+            on_focus: if self.focus: root.got_focus_reset()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineReset
+                    size_hint: 1,0.5
+                    text: "python.exe gw.py reset COM11"
+                Button:
+                    id: btnLaunchReset
+                    text: "Launch"
+                    on_release:root.process_reset()
+
+        # PORTS
+        FocusTabbedPanelItem:
+            text: ' Ports '
             on_focus: if self.focus: root.got_focus_configuration(commButtonLayout)
             BoxLayout:
                 orientation: "vertical"
