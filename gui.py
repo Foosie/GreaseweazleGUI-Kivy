@@ -200,6 +200,25 @@ class MainScreen(Screen):
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineWTD.text = cmdline
 
+    def build_erase_disk(self):
+        if sys.platform == 'win32':
+            cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" erase "
+        else:
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' erase "
+        if self.ids.chkFirstCylToErase.active:
+            cmdline += "--scyl=" + self.ids.txtFirstCylToErase.text + " "
+        if self.ids.chkLastCylToErase.active:
+            cmdline += "--ecyl=" + self.ids.txtLastCylToErase.text + " "
+        if self.ids.tglSingleSidedErase.state == "down":
+            cmdline += "--single-sided "
+        if self.ids.chkSelectDriveErase.active:
+            cmdline += "--drive=" + self.ids.txtSelectDriveErase.text + " "
+        if (sys.platform == 'win32') or (sys.platform == 'darwin'):
+            cmdline += self.gw_comm_port + "\""
+        else:
+            cmdline += self.gw_comm_port + ";read -n1\""
+        self.ids.txtCommandLineErase.text = cmdline
+
     def build_set_delays(self):
         if sys.platform == 'win32':
             cmdline = "python \"" + self.gw_application_folder + "gw.py\" delays "
@@ -261,6 +280,14 @@ class MainScreen(Screen):
             cmdline += self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineReset.text = cmdline
 
+    def build_bandwidth(self):
+        cmdline = "python \"" + self.gw_application_folder + "gw.py\" bandwidth "
+        if sys.platform == 'win32' or sys.platform == 'darwin':
+            cmdline += self.gw_comm_port + "\""
+        else:
+            cmdline += self.gw_comm_port + ";read -n1\""
+        self.ids.txtCommandLineBandwidth.text = cmdline
+
     def process_read_from_disk(self):
         if not self.checkIfProcessRunningByScript("gw.py"):
             self.iniWriteFile()
@@ -289,6 +316,22 @@ class MainScreen(Screen):
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineWTD.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+        else:
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
+
+    def process_erase_disk(self):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
+            if sys.platform == 'win32':
+                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineErase.text
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
+            else:
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineErase.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineErase.text
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
         else:
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
@@ -358,11 +401,27 @@ class MainScreen(Screen):
         else:
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
-    def process_select_file_firmware(self):
-        self.self.gw_dirty = True  # indicate we need a refresh
+    def process_bandwidth(self):
+        if not self.checkIfProcessRunningByScript("gw.py"):
+            self.iniWriteFile()
+            if sys.platform == 'win32':
+                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineBandwidth.text
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
+            else:
+                if sys.platform == 'darwin':
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineBandwidth.text + "\"'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineBandwidth.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+        else:
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def got_focus_write_to_disk(self):
         self.build_write_to_disk()
+
+    def got_focus_erase_disk(self):
+        self.build_erase_disk()
 
     def got_focus_read_from_disk(self):
         self.build_read_from_disk()
@@ -378,6 +437,9 @@ class MainScreen(Screen):
 
     def got_focus_reset(self):
         self.build_reset()
+
+    def got_focus_bandwidth(self):
+        self.build_bandwidth()
 
     def got_focus_configuration(self, box_layout):
         self.create_comm_buttons(box_layout)
@@ -409,8 +471,12 @@ class MainScreen(Screen):
         if self.main_screen.gw_dirty:
             self.main_screen.build_read_from_disk(self)
             self.main_screen.build_write_to_disk(self)
+            self.main_screen.build_erase_disk(self)
             self.main_screen.build_set_delays(self)
             self.main_screen.build_update_firmware(self)
+            self.main_screen.build_pin_level(self)
+            self.main_screen.build_reset(self)
+            self.main_screen.build_bandwidth(self)
             self.main_screen.gw_dirty = False
 
     def checkIfProcessRunningByScript(self, script):
@@ -509,6 +575,29 @@ class MainScreen(Screen):
         else:
             config.set('gbWriteToDisk', 'tglSingleSidedWTD', 'False')
 
+        # erase disk
+        config.add_section('gbEraseDisk')
+        config.set('gbEraseDisk', 'txtCommandLineErase', self.ids.txtCommandLineErase.text)
+        if self.ids.chkFirstCylToErase.active:
+            config.set('gbEraseDisk', 'chkFirstCylToErase', 'True')
+        else:
+            config.set('gbEraseDisk', 'chkFirstCylToErase', 'False')
+        config.set('gbEraseDisk', 'txtFirstCylToErase', self.ids.txtFirstCylToErase.text)
+        if self.ids.chkLastCylToErase.active:
+            config.set('gbEraseDisk', 'chkLastCylToErase', 'True')
+        else:
+            config.set('gbEraseDisk', 'chkLastCylToErase', 'False')
+        config.set('gbEraseDisk', 'txtLastCylToErase', self.ids.txtLastCylToErase.text)
+        if self.ids.chkSelectDriveErase.active:
+            config.set('gbEraseDisk', 'chkSelectDriveErase', 'True')
+        else:
+            config.set('gbEraseDisk', 'chkSelectDriveErase', 'False')
+        config.set('gbEraseDisk', 'txtSelectDriveErase', self.ids.txtSelectDriveErase.text)
+        if self.ids.tglSingleSidedErase.state == "down":
+            config.set('gbEraseDisk', 'tglSingleSidedErase', 'True')
+        else:
+            config.set('gbEraseDisk', 'tglSingleSidedErase', 'False')
+
         # set delays
         config.add_section('gbSetDelays')
         config.set('gbSetDelays', 'txtCommandLineDelays', self.ids.txtCommandLineDelays.text)
@@ -579,24 +668,30 @@ class MainScreen(Screen):
             state = config.get('gbReadFromDisk', 'chkDoubleStepRFD')
             if state == 'True':
                 self.ids.chkDoubleStepRFD.active = True
+                self.ids.chkDoubleStepRFD.state = 'down'
             state = config.get('gbReadFromDisk', 'chkRevsPerTrack')
             if state == 'True':
                 self.ids.chkRevsPerTrack.active = True
+                self.ids.chkRevsPerTrack.state = 'down'
             self.ids.txtRevsPerTrack.text = config.get('gbReadFromDisk', 'txtRevsPerTrack')
             state = config.get('gbReadFromDisk', 'chkFirstCylToRead')
             if state == 'True':
                 self.ids.chkFirstCylToRead.active = True
+                self.ids.chkFirstCylToRead.state = 'down'
             self.ids.txtFirstCylToRead.text = config.get('gbReadFromDisk', 'txtFirstCylToRead')
             state = config.get('gbReadFromDisk', 'chkLastCylToRead')
             if state == 'True':
                 self.ids.chkLastCylToRead.active = True
+                self.ids.chkLastCylToRead.state = 'down'
             self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
             state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
             if state == 'True':
                 self.ids.chkSelectDriveRFD.active = True
+                self.ids.chkSelectDriveRFD.state = 'down'
             self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
             state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
-            if state == 'Down':
+            if state == 'True':
+                self.ids.tglSingleSidedRFD.active = True
                 self.ids.tglSingleSidedRFD.state = 'down'
 
             # write to disk
@@ -605,44 +700,75 @@ class MainScreen(Screen):
             state = config.get('gbWriteToDisk', 'chkAdjustSpeed')
             if state == 'True':
                 self.ids.chkAdjustSpeed.active = True
+                self.ids.chkAdjustSpeed.state = 'down'
             state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
             if state == 'True':
                 self.ids.chkFirstCylToWrite.active = True
+                self.ids.chkFirstCylToWrite.state = 'down'
             self.ids.txtFirstCylToWrite.text = config.get('gbWriteToDisk', 'txtFirstCylToWrite')
             state = config.get('gbWriteToDisk', 'chkLastCylToWrite')
             if state == 'True':
                 self.ids.chkLastCylToWrite.active = True
+                self.ids.chkLastCylToWrite.state = 'down'
             self.ids.txtLastCylToWrite.text = config.get('gbWriteToDisk', 'txtLastCylToWrite')
             state = config.get('gbWriteToDisk', 'chkSelectDriveWTD')
             if state == 'True':
                 self.ids.chkSelectDriveWTD.active = True
+                self.ids.chkSelectDriveWTD.state = 'down'
             self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
             state = config.get('gbWriteToDisk', 'tglSingleSidedWTD')
             if state == 'True':
                 self.ids.tglSingleSidedWTD.active = True
+                self.ids.tglSingleSidedWTD.state = 'down'
+
+            # erase disk
+            state = config.get('gbEraseDisk', 'chkFirstCylToErase')
+            if state == 'True':
+                self.ids.chkFirstCylToErase.active = True
+                self.ids.chkFirstCylToErase.state = 'down'
+            self.ids.txtFirstCylToErase.text = config.get('gbEraseDisk', 'txtFirstCylToErase')
+            state = config.get('gbEraseDisk', 'chkLastCylToErase')
+            if state == 'True':
+                self.ids.chkLastCylToErase.active = True
+                self.ids.chkLastCylToErase.state = 'down'
+            self.ids.txtLastCylToErase.text = config.get('gbEraseDisk', 'txtLastCylToErase')
+            state = config.get('gbEraseDisk', 'chkSelectDriveErase')
+            if state == 'True':
+                self.ids.chkSelectDriveErase.active = True
+                self.ids.chkSelectDriveErase.state = 'down'
+            self.ids.txtSelectDriveErase.text = config.get('gbEraseDisk', 'txtSelectDriveErase')
+            state = config.get('gbEraseDisk', 'tglSingleSidedErase')
+            if state == 'True':
+                self.ids.tglSingleSidedErase.active = True
+                self.ids.tglSingleSidedErase.state = 'down'
 
             # set delays
             self.ids.txtCommandLineDelays.text = config.get('gbSetDelays', 'txtCommandLineDelays')
             state = config.get('gbSetDelays', 'chkDelayAfterSelect')
             if state == 'True':
                 self.ids.chkDelayAfterSelect.active = True
+                self.ids.chkDelayAfterSelect.state = 'down'
             self.ids.txtDelayAfterSelect.text = config.get('gbSetDelays', 'txtDelayAfterSelect')
             state = config.get('gbSetDelays', 'chkDelayBetweenSteps')
             if state == 'True':
                 self.ids.chkDelayBetweenSteps.active = True
+                self.ids.chkDelayBetweenSteps.state = 'down'
             self.ids.txtDelayBetweenSteps.text = config.get('gbSetDelays', 'txtDelayBetweenSteps')
 
             state = config.get('gbSetDelays', 'chkSettleDelayAfterSeek')
             if state == 'True':
                 self.ids.chkSettleDelayAfterSeek.active = True
+                self.ids.chkSettleDelayAfterSeek.state = 'down'
             self.ids.txtSettleDelayAfterSeek.text = config.get('gbSetDelays', 'txtSettleDelayAfterSeek')
             state = config.get('gbSetDelays', 'chkDelayAfterMotorOn')
             if state == 'True':
                 self.ids.chkDelayAfterMotorOn.active = True
+                self.ids.chkDelayAfterMotorOn.state = 'down'
             self.ids.txtDelayAfterMotorOn.text = config.get('gbSetDelays', 'txtDelayAfterMotorOn')
             state = config.get('gbSetDelays', 'chkDelayUntilAutoDeselect')
             if state == 'True':
                 self.ids.chkDelayUntilAutoDeselect.active = True
+                self.ids.chkDelayUntilAutoDeselect.state = 'down'
             self.ids.txtDelayUntilAutoDeselect.text = config.get('gbSetDelays', 'txtDelayUntilAutoDeselect')
 
             # update firmware
@@ -655,9 +781,11 @@ class MainScreen(Screen):
             state = config.get('gbPinLevel', 'chkHighLevel')
             if state == 'True':
                 self.ids.chkHighLevel.active = True
+                self.ids.chkHighLevel.state = 'down'
             state = config.get('gbPinLevel', 'chkLowLevel')
             if state == 'True':
                 self.ids.chkLowLevel.active = True
+                self.ids.chkLowLevel.state = 'down'
 
             # reset - nothing to do
 
@@ -766,7 +894,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.35 / Host Tools v0.12 - by Don Mankin"
+    title = "GreaseweazleGUI v0.36 / Host Tools v0.15 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI

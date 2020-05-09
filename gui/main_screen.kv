@@ -38,6 +38,15 @@
         txtSelectDriveWTD: txtSelectDriveWTD
         tglSingleSidedWTD: tglSingleSidedWTD
 
+         # erase disk
+        txtCommandLineErase: txtCommandLineErase
+        chkFirstCylToErase: chkFirstCylToErase
+        txtFirstCylToErase: txtFirstCylToErase
+        chkLastCylToErase: chkLastCylToErase
+        txtLastCylToErase: txtLastCylToErase
+        txtSelectDriveErase: txtSelectDriveErase
+        tglSingleSidedErase: tglSingleSidedErase
+
         # set delays
         txtCommandLineDelays: txtCommandLineDelays
         chkDelayAfterSelect: chkDelayAfterSelect
@@ -67,11 +76,11 @@
         pos_hint: {'center_x': .5, 'center_y': .5}
 
         do_default_tab: False
-        tab_width: self.width / 7
+        tab_width: self.width / 9
 
         # READ FROM DISK
         FocusTabbedPanelItem:
-            text: ' Read from Disk '
+            text: ' Read Disk '
             on_focus: if self.focus: root.got_focus_read_from_disk()
             BoxLayout:
                 orientation: "vertical"
@@ -177,7 +186,7 @@
 
         # WRITE TO DISK
         FocusTabbedPanelItem:
-            text: ' Write to Disk '
+            text: ' Write Disk '
             on_focus: if self.focus: root.got_focus_write_to_disk()
             BoxLayout:
                 orientation: "vertical"
@@ -249,7 +258,6 @@
                         id: tglSingleSidedWTD
                         text: "Single Sided"
                         state: "normal"
-                        group: "WriteToDiskSides"
                         on_release: root.build_write_to_disk()
                     Button:
                         id: btnSelectFileWTD
@@ -262,6 +270,79 @@
                     size_hint: 1,0.2
                     text: "Launch"
                     on_release: root.process_write_to_disk()
+
+
+        # ERASE DISK
+        FocusTabbedPanelItem:
+            text: ' Erase Disk '
+            on_focus: if self.focus: root.got_focus_erase_disk()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineErase
+                    size_hint: 1,0.5
+                    text: "python gw.py erase --scyl=0 --ecyl=79 --single-sided --drive=A '/home/user/mydisk.scp' COM11"
+                GridLayout:
+                    rows: 3
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    CheckBox:
+                        id: chkFirstCylToErase
+                        on_release: root.build_erase_disk()
+                    Label:
+                        text: "First cylinder to erase"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtFirstCylToErase
+                        text: "0"
+                        disabled: not chkFirstCylToErase.active
+                        on_text: root.build_erase_disk()
+                    CheckBox:
+                        id: chkLastCylToErase
+                        on_release: root.build_erase_disk()
+                    Label:
+                        text: "Last cylinder to erase"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtLastCylToErase
+                        text: "79"
+                        disabled: not chkLastCylToErase.active
+                        on_text: root.build_erase_disk()
+                    CheckBox:
+                        id: chkSelectDriveErase
+                        on_release: root.build_erase_disk()
+                    Label:
+                        text: "F7 Select Drive"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSelectDriveErase
+                        text: "0"
+                        on_text: root.build_erase_disk()
+                        disabled: not chkSelectDriveErase.active
+                GridLayout:
+                    rows: 1
+                    cols: 2
+                    padding: 10
+                    spacing: 10
+                    size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglSingleSidedErase
+                        text: "Single Sided"
+                        state: "normal"
+                        on_release: root.build_erase_disk()
+                Button:
+                    id: btnLaunchErase
+                    size_hint: 1,0.2
+                    text: "Launch"
+                    on_release: root.process_erase_disk()
+
 
         # SET DELAYS
         FocusTabbedPanelItem:
@@ -352,7 +433,7 @@
 
         # UPDATE FIRMWARE
         FocusTabbedPanelItem:
-            text: ' Upd. Firmware '
+            text: ' Firmware '
             on_focus: if self.focus: root.got_focus_update_firmware()
             BoxLayout:
                 orientation: "vertical"
@@ -438,6 +519,21 @@
                     id: btnLaunchReset
                     text: "Launch"
                     on_release:root.process_reset()
+
+        # MEASURE BANDWIDTH
+        FocusTabbedPanelItem:
+            text: ' Bandwidth '
+            on_focus: if self.focus: root.got_focus_bandwidth()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineBandwidth
+                    size_hint: 1,0.5
+                    text: "python.exe gw.py bandwidth COM11"
+                Button:
+                    id: btnLaunchBandwidth
+                    text: "Launch"
+                    on_release:root.process_bandwidth()
 
         # PORTS
         FocusTabbedPanelItem:
