@@ -25,6 +25,7 @@
         chkLastCylToRead: chkLastCylToRead
         txtLastCylToRead: txtLastCylToRead
         chkSelectDriveRFD: chkSelectDriveRFD
+        tglUseExeRFD: tglUseExeRFD
         tglSingleSidedRFD: tglSingleSidedRFD
         chkDoubleStepRFD: chkDoubleStepRFD
 
@@ -36,6 +37,7 @@
         chkLastCylToWrite: chkLastCylToWrite
         txtLastCylToWrite: txtLastCylToWrite
         txtSelectDriveWTD: txtSelectDriveWTD
+        tglUseExeWTD: tglUseExeWTD
         tglSingleSidedWTD: tglSingleSidedWTD
 
          # erase disk
@@ -45,6 +47,7 @@
         chkLastCylToErase: chkLastCylToErase
         txtLastCylToErase: txtLastCylToErase
         txtSelectDriveErase: txtSelectDriveErase
+        tglUseExeErase: tglUseExeErase
         tglSingleSidedErase: tglSingleSidedErase
 
         # set delays
@@ -57,18 +60,27 @@
         txtSettleDelayAfterSeek: txtSettleDelayAfterSeek
         chkDelayUntilAutoDeselect: chkDelayUntilAutoDeselect
         txtDelayUntilAutoDeselect: txtDelayUntilAutoDeselect
+        tglUseExeDelays: tglUseExeDelays
 
         # update firmware
         txtCommandLineFirmware: txtCommandLineFirmware
+        tglBootloader: tglBootloader
+        tglUseExeFW: tglUseExeFW
 
         # pin level
         txtPinLevel: txtPinLevel
         chkHighLevel: chkHighLevel
         chkLowLevel: chkLowLevel
         txtCommandLinePinLevel: txtCommandLinePinLevel
+        tglUseExePinLevel: tglUseExePinLevel
 
         # reset
         txtCommandLineReset: txtCommandLineReset
+        tglUseExeReset: tglUseExeReset
+
+        # bandwidth
+        txtCommandLineBandwidth: txtCommandLineBandwidth
+        tglUseExeBandwidth: tglUseExeBandwidth
 
         # creating the size
         # and the alignment of the tab
@@ -157,10 +169,15 @@
                         disabled: not chkSelectDriveRFD.active
                 GridLayout:
                     rows: 1
-                    cols: 3
+                    cols: 4
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglUseExeRFD
+                        text: "Use EXE"
+                        state: "normal"
+                        on_release: root.build_read_from_disk()
                     ToggleButton:
                         id: tglSingleSidedRFD
                         text: "Single Sided"
@@ -250,10 +267,15 @@
                         disabled: not chkSelectDriveWTD.active
                 GridLayout:
                     rows: 1
-                    cols: 2
+                    cols: 3
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglUseExeWTD
+                        text: "Use EXE"
+                        state: "normal"
+                        on_release: root.build_write_to_disk()
                     ToggleButton:
                         id: tglSingleSidedWTD
                         text: "Single Sided"
@@ -332,6 +354,11 @@
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
+                    ToggleButton:
+                        id: tglUseExeErase
+                        text: "Use EXE"
+                        state: "normal"
+                        on_release: root.build_erase_disk()
                     ToggleButton:
                         id: tglSingleSidedErase
                         text: "Single Sided"
@@ -425,6 +452,12 @@
                         text: "10"
                         on_text: root.build_set_delays()
                         disabled: not chkDelayUntilAutoDeselect.active
+                ToggleButton:
+                    id: tglUseExeDelays
+                    size_hint: 1,0.2
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_set_delays()
                 Button:
                     id: btnLaunchDelays
                     size_hint: 1,0.2
@@ -441,6 +474,18 @@
                     id:txtCommandLineFirmware
                     size_hint: 1,0.5
                     text: "python.exe gw.py update 'Greaseweazle-v0.7.upd' COM11"
+                BoxLayout:
+                    orientation: "horizontal"
+                    ToggleButton:
+                        id: tglUseExeFW
+                        text: "Use EXE"
+                        state: "normal"
+                        on_release: root.build_update_firmware()
+                    ToggleButton:
+                        id: tglBootloader
+                        text: "Bootloader"
+                        state: "normal"
+                        on_release: root.build_update_firmware()
                 Button:
                     id: btnSelectFileFirmware
                     text: "Select File"
@@ -500,6 +545,11 @@
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
+                ToggleButton:
+                    id: tglUseExePinLevel
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_pin_level()
                 Button:
                     id: btnLaunchPinLevel
                     text: "Launch"
@@ -515,6 +565,11 @@
                     id:txtCommandLineReset
                     size_hint: 1,0.5
                     text: "python.exe gw.py reset COM11"
+                ToggleButton:
+                    id: tglUseExeReset
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_reset()
                 Button:
                     id: btnLaunchReset
                     text: "Launch"
@@ -530,6 +585,11 @@
                     id:txtCommandLineBandwidth
                     size_hint: 1,0.5
                     text: "python.exe gw.py bandwidth COM11"
+                ToggleButton:
+                    id: tglUseExeBandwidth
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_bandwidth()
                 Button:
                     id: btnLaunchBandwidth
                     text: "Launch"

@@ -52,6 +52,7 @@ class MainScreen(Screen):
     txtLastCylToRead = ObjectProperty(TextInput())
     chkSelectDriveRFD = ObjectProperty(CheckBox())
     txtSelectDriveRFD = ObjectProperty(TextInput())
+    tglUseExeRFD = ObjectProperty(ToggleButton())
     tglSingleSidedRFD = ObjectProperty(ToggleButton())
     chkDoubleStepRFD = ObjectProperty(CheckBox())
 
@@ -64,6 +65,7 @@ class MainScreen(Screen):
     txtLastCylToWrite = ObjectProperty(TextInput())
     chkSelectDriveWTD = ObjectProperty(CheckBox())
     txtSelectDriveWTD = ObjectProperty(TextInput())
+    tglUseExeWTD = ObjectProperty(ToggleButton())
     tglSingleSidedWTD = ObjectProperty(ToggleButton())
 
     # set delays
@@ -76,18 +78,23 @@ class MainScreen(Screen):
     txtSettleDelayAfterSeek = ObjectProperty(TextInput())
     chkDelayUntilAutoDeselect = ObjectProperty(CheckBox())
     txtDelayUntilAutoDeselect = ObjectProperty(TextInput())
+    tglUseExeDelays = ObjectProperty(ToggleButton())
 
     # update firmware
     txtCommandLineFirmware = ObjectProperty(TextInput())
+    tglUseExeFW = ObjectProperty(ToggleButton())
+    tglBootloader = ObjectProperty(ToggleButton())
 
     # pin level
     txtPinLevel = ObjectProperty(TextInput())
     chkHighLevel = ObjectProperty(CheckBox())
     chkLowLevel = ObjectProperty(CheckBox())
     txtCommandLinePinLevel = ObjectProperty(TextInput())
+    tglUseExePinLevel = ObjectProperty(ToggleButton())
 
     # reset
     txtCommandLineReset = ObjectProperty(TextInput())
+    tglUseExeReset = ObjectProperty(ToggleButton())
 
     # global variables
     gw_application_folder = ObjectProperty(None)
@@ -101,6 +108,7 @@ class MainScreen(Screen):
     gw_comm_port = ""
 
     gw_iniFilespec = "./gui.ini"
+    gw_bUseExe = False;
     gw_RFDFilename = "mydisk.scp"
     gw_RFDFolder = "./"
     gw_WTDFilename = "mydisk.scp"
@@ -155,9 +163,16 @@ class MainScreen(Screen):
         self.gw_dirty = True
 
     def build_read_from_disk(self):
+        if self.ids.tglUseExeRFD.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
         file_spec = os.path.join(self.main_screen.gw_RFDFolder, self.main_screen.gw_RFDFilename)
         if sys.platform == 'win32':
-            cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
+            if self.ids.tglUseExeRFD.state == "down":
+                cmdline = "\"gw.exe read "
+            else:
+                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' read "
         if self.ids.chkDoubleStepRFD.active:
@@ -179,9 +194,17 @@ class MainScreen(Screen):
         self.ids.txtCommandLineRFD.text = cmdline
 
     def build_write_to_disk(self):
+        if self.ids.tglUseExeWTD.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
         file_spec = os.path.join(self.main_screen.gw_WTDFolder, self.main_screen.gw_WTDFilename)
         if sys.platform == 'win32':
-            cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" write "
+            if self.ids.tglUseExeWTD.state == "down":
+                cmdline = "\"gw.exe write "
+            else:
+                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" write "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' write "
         if self.ids.chkAdjustSpeed.active:
@@ -201,8 +224,16 @@ class MainScreen(Screen):
         self.ids.txtCommandLineWTD.text = cmdline
 
     def build_erase_disk(self):
+        if self.ids.tglUseExeErase.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
         if sys.platform == 'win32':
-            cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" erase "
+            if self.ids.tglUseExeErase.state == "down":
+                cmdline = "\"gw.exe erase "
+            else:
+                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" erase "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' erase "
         if self.ids.chkFirstCylToErase.active:
@@ -220,8 +251,16 @@ class MainScreen(Screen):
         self.ids.txtCommandLineErase.text = cmdline
 
     def build_set_delays(self):
+        if self.ids.tglUseExeDelays.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
         if sys.platform == 'win32':
-            cmdline = "python \"" + self.gw_application_folder + "gw.py\" delays "
+            if self.ids.tglUseExeDelays.state == "down":
+                cmdline = "\"gw.exe delays "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + "gw.py\" delays "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' delays "
         if self.ids.chkDelayAfterSelect.active:
@@ -241,11 +280,21 @@ class MainScreen(Screen):
         self.ids.txtCommandLineDelays.text = cmdline
 
     def build_update_firmware(self):
+        if self.ids.tglUseExeFW.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
         file_spec = os.path.join(self.main_screen.gw_UpdateFWFolder, self.main_screen.gw_UpdateFWFilename)
         if sys.platform == 'win32':
-            cmdline = "python \"" + self.gw_application_folder + "gw.py\" update "
+            if self.ids.tglUseExeFW.state == "down":
+                cmdline = "\"gw.exe update "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + "gw.py\" update "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' update "
+        if self.ids.tglBootloader.state == "down":
+            cmdline += "--bootloader "
         if sys.platform == 'win32':
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
@@ -256,8 +305,16 @@ class MainScreen(Screen):
         self.ids.txtCommandLineFirmware.text = cmdline
 
     def build_pin_level(self):
+        if self.ids.tglUseExePinLevel.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
         if sys.platform == 'win32':
-            cmdline = "python \"" + self.gw_application_folder + "gw.py\" pin "
+            if self.ids.tglUseExePinLevel.state == "down":
+                cmdline = "\"gw.exe pin "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + "gw.py\" pin "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' pin "
         cmdline += self.ids.txtPinLevel.text
@@ -273,7 +330,18 @@ class MainScreen(Screen):
         self.ids.txtCommandLinePinLevel.text = cmdline
 
     def build_reset(self):
-        cmdline = "python \"" + self.gw_application_folder + "gw.py\" reset "
+        if self.ids.tglUseExeReset.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
+        if sys.platform == 'win32':
+            if self.ids.tglUseExeReset.state == "down":
+                cmdline = "\"gw.exe reset "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + "gw.py\" reset "
+        else:
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' reset "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -281,7 +349,18 @@ class MainScreen(Screen):
         self.ids.txtCommandLineReset.text = cmdline
 
     def build_bandwidth(self):
-        cmdline = "python \"" + self.gw_application_folder + "gw.py\" bandwidth "
+        if self.ids.tglUseExeBandwidth.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
+        if sys.platform == 'win32':
+            if self.ids.tglUseExeBandwidth.state == "down":
+                cmdline = "\"gw.exe bandwidth "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + "gw.py\" bandwidth "
+        else:
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' bandwidth "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -289,10 +368,10 @@ class MainScreen(Screen):
         self.ids.txtCommandLineBandwidth.text = cmdline
 
     def process_read_from_disk(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineRFD.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineRFD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -305,10 +384,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_write_to_disk(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineWTD.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineWTD.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -321,10 +400,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_erase_disk(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineErase.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineErase.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -337,10 +416,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_set_delays(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineDelays.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineDelays.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -353,10 +432,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_update_firmware(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineFirmware.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -370,10 +449,10 @@ class MainScreen(Screen):
 
     def process_pin_level(self):
         self.build_pin_level()
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLinePinLevel.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLinePinLevel.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -386,10 +465,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_reset(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineReset.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineReset.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -402,10 +481,10 @@ class MainScreen(Screen):
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
     def process_bandwidth(self):
-        if not self.checkIfProcessRunningByScript("gw.py"):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
             if sys.platform == 'win32':
-                command_line = "C:\\Windows\System32\\cmd.exe /K " + self.ids.txtCommandLineBandwidth.text
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineBandwidth.text
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
@@ -491,6 +570,46 @@ class MainScreen(Screen):
                 pass
         return False
 
+    def set_exe_mode(self, state):
+        if state == "True":
+            self.ids.tglUseExeRFD.active = True
+            self.ids.tglUseExeRFD.state = 'down'
+            self.ids.tglUseExeWTD.active = True
+            self.ids.tglUseExeWTD.state = 'down'
+            self.ids.tglUseExeWTD.active = True
+            self.ids.tglUseExeWTD.state = 'down'
+            self.ids.tglUseExeErase.active = True
+            self.ids.tglUseExeErase.state = 'down'
+            self.ids.tglUseExeDelays.active = True
+            self.ids.tglUseExeDelays.state = 'down'
+            self.ids.tglUseExeFW.active = True
+            self.ids.tglUseExeFW.state = 'down'
+            self.ids.tglUseExePinLevel.active = True
+            self.ids.tglUseExePinLevel.state = 'down'
+            self.ids.tglUseExeReset.active = True
+            self.ids.tglUseExeReset.state = 'down'
+            self.ids.tglUseExeBandwidth.active = True
+            self.ids.tglUseExeBandwidth.state = 'down'
+        else:
+            self.ids.tglUseExeRFD.active = False
+            self.ids.tglUseExeRFD.state = 'normal'
+            self.ids.tglUseExeWTD.active = False
+            self.ids.tglUseExeWTD.state = 'normal'
+            self.ids.tglUseExeWTD.active = False
+            self.ids.tglUseExeWTD.state = 'normal'
+            self.ids.tglUseExeErase.active = False
+            self.ids.tglUseExeErase.state = 'normal'
+            self.ids.tglUseExeDelays.active = False
+            self.ids.tglUseExeDelays.state = 'normal'
+            self.ids.tglUseExeFW.active = False
+            self.ids.tglUseExeFW.state = 'normal'
+            self.ids.tglUseExePinLevel.active = False
+            self.ids.tglUseExePinLevel.state = 'normal'
+            self.ids.tglUseExeReset.active = False
+            self.ids.tglUseExeReset.state = 'normal'
+            self.ids.tglUseExeBandwidth.active = False
+            self.ids.tglUseExeBandwidth.state = 'normal'
+
     def ini_read(self, section, option, filespec):
         config = configparser.ConfigParser()
 
@@ -511,6 +630,16 @@ class MainScreen(Screen):
     def iniWriteFile(self):
 
         config = configparser.ConfigParser()
+
+        # Miscellaneous
+        config.add_section('gbMiscellaneous')
+        if self.ids.tglUseExeRFD.state == "down" or self.ids.tglUseExeWTD.state == "down" \
+                or self.ids.tglUseExeErase.state == "down" or self.ids.tglUseExeDelays.state == "down" \
+                or self.ids.tglUseExeFW.state == "down" or self.ids.tglUseExePinLevel.state == "down" \
+                or self.ids.tglUseExeReset.state == "down" or self.ids.tglUseExeBandwidth.state == "down":
+            config.set('gbMiscellaneous', 'tglUseExeMode', 'True')
+        else:
+            config.set('gbMiscellaneous', 'tglUseExeMode', 'False')
 
         # read from disk
         config.add_section('gbReadFromDisk')
@@ -632,6 +761,10 @@ class MainScreen(Screen):
         config.set('gbUpdateFirmware', 'txtCommandLineFirmware', self.ids.txtCommandLineFirmware.text)
         config.set('gbUpdateFirmware', 'gw_UpdateFWFilename', self.main_screen.gw_UpdateFWFilename)
         config.set('gbUpdateFirmware', 'gw_UpdateFWFolder', self.main_screen.gw_UpdateFWFolder)
+        if self.ids.tglBootloader.state == "down":
+            config.set('gbUpdateFirmware', 'tglBootloader', "True")
+        else:
+            config.set('gbUpdateFirmware', 'tglBootloader', "False")
 
         # pin level
         config.add_section('gbPinLevel')
@@ -662,7 +795,8 @@ class MainScreen(Screen):
 
         try:
 
-            # read from disk
+            state = config.get('gbMiscellaneous', 'tglUseExeMode')
+            self.set_exe_mode(state)
             self.main_screen.gw_RFDFilename = config.get('gbReadFromDisk', 'gw_RFDFilename')
             self.main_screen.gw_RFDFolder = config.get('gbReadFromDisk', 'gw_RFDFolder')
             state = config.get('gbReadFromDisk', 'chkDoubleStepRFD')
@@ -774,6 +908,10 @@ class MainScreen(Screen):
             # update firmware
             self.main_screen.gw_UpdateFWFilename = config.get('gbUpdateFirmware', 'gw_UpdateFWFilename')
             self.main_screen.gw_UpdateFWFolder = config.get('gbUpdateFirmware', 'gw_UpdateFWFolder')
+            state = config.get('gbUpdateFirmware', 'tglBootloader')
+            if state == 'True':
+                self.ids.tglBootloader.active = True
+                self.ids.tglBootloader.state = "down"
 
             # pin level
             self.ids.txtCommandLinePinLevel.text = config.get('gbPinLevel', 'txtCommandLinePinLevel')
@@ -894,7 +1032,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.36 / Host Tools v0.15 - by Don Mankin"
+    title = "GreaseweazleGUI v0.37 / Host Tools v0.17 - by Don Mankin"
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI
