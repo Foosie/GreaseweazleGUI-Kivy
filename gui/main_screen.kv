@@ -25,6 +25,10 @@
         chkLastCylToRead: chkLastCylToRead
         txtLastCylToRead: txtLastCylToRead
         chkSelectDriveRFD: chkSelectDriveRFD
+        chkRateRFD: chkRateRFD
+        txtRateRFD: txtRateRFD
+        chkRpmRFD: chkRpmRFD
+        txtRpmRFD: txtRpmRFD
         tglUseExeRFD: tglUseExeRFD
         tglSingleSidedRFD: tglSingleSidedRFD
         chkDoubleStepRFD: chkDoubleStepRFD
@@ -82,13 +86,17 @@
         txtCommandLineBandwidth: txtCommandLineBandwidth
         tglUseExeBandwidth: tglUseExeBandwidth
 
+        # info
+        txtCommandLineInfo: txtCommandLineInfo
+        tglUseExeInfo: tglUseExeInfo
+
         # creating the size
         # and the alignment of the tab
         size_hint: 1, 1
         pos_hint: {'center_x': .5, 'center_y': .5}
 
         do_default_tab: False
-        tab_width: self.width / 9
+        tab_width: self.width / 10
 
         # READ FROM DISK
         FocusTabbedPanelItem:
@@ -167,6 +175,32 @@
                         text: "0"
                         on_text: root.build_read_from_disk()
                         disabled: not chkSelectDriveRFD.active
+                    CheckBox:
+                        id: chkRateRFD
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "Rate (kbit/s)"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtRateRFD
+                        text: "250"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkRateRFD.active
+                    CheckBox:
+                        id: chkRpmRFD
+                        on_release: root.build_read_from_disk()
+                    Label:
+                        text: "RPM"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtRpmRFD
+                        text: "300"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkRpmRFD.active
                 GridLayout:
                     rows: 1
                     cols: 4
@@ -595,6 +629,26 @@
                     text: "Launch"
                     on_release:root.process_bandwidth()
 
+        # INFO ON SETUP
+        FocusTabbedPanelItem:
+            text: ' Info '
+            on_focus: if self.focus: root.got_focus_info()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineInfo
+                    size_hint: 1,0.5
+                    text: "python.exe gw.py info COM11"
+                ToggleButton:
+                    id: tglUseExeInfo
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_info()
+                Button:
+                    id: btnLaunchInfo
+                    text: "Launch"
+                    on_release:root.process_info()
+
         # PORTS
         FocusTabbedPanelItem:
             text: ' Ports '
@@ -609,6 +663,3 @@
                     Button:
                         text: "Refresh Available Ports"
                         on_release: root.create_comm_buttons(commButtonLayout)
-                    Button:
-                        text: "Clear Port"
-                        on_release: root.clear_port()
