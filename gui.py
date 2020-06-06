@@ -29,7 +29,7 @@ import psutil
 import ntpath
 import subprocess
 import os
-from pathlib import Path
+import os.path
 import configparser
 
 if sys.platform == 'win32':
@@ -100,6 +100,10 @@ class MainScreen(Screen):
     txtCommandLineReset = ObjectProperty(TextInput())
     tglUseExeReset = ObjectProperty(ToggleButton())
 
+    # bandwidth
+    txtCommandLineBandwidth = ObjectProperty(TextInput())
+    tglUseExeBandwidth = ObjectProperty(ToggleButton())
+
     # info
     txtCommandLineInfo = ObjectProperty(TextInput())
     tglUseExeInfo = ObjectProperty(ToggleButton())
@@ -127,10 +131,21 @@ class MainScreen(Screen):
     gw_dirty = False
     gw_window_pid = -1
 
+    # get application folder
     if sys.platform == 'win32':
         gw_application_folder = sys.path[0] + "\\"
     else:
         gw_application_folder = sys.path[0] + "/"
+
+    # set script name
+    if sys.platform == 'win32':
+        gw_script = sys.path[0] + "\\" + "gw"
+    else:
+        gw_script = sys.path[0] + "/" + "gw"
+    if os.path.isfile(gw_script):
+        gw_script = "gw"
+    else:
+        gw_script = "gw.py"
 
     # override function so we can process focus behavior
     class FocusTabbedPanelItem(FocusBehavior, TabbedPanelItem):
@@ -180,9 +195,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeRFD.state == "down":
                 cmdline = "\"gw.exe read "
             else:
-                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" read "
+                cmdline = "\"python \"" + self.gw_application_folder + self.gw_script + "\" read "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' read "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' read "
         if self.ids.chkDoubleStepRFD.active:
             cmdline += "--double-step "
         if self.ids.chkRevsPerTrack.active:
@@ -193,12 +208,12 @@ class MainScreen(Screen):
             cmdline += "--ecyl=" + self.ids.txtLastCylToRead.text + " "
         if self.ids.chkSelectDriveRFD.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveRFD.text + " "
-        if self.ids.tglSingleSidedRFD.state == "down":
-            cmdline += "--single-sided "
         if self.ids.chkRateRFD.active:
             cmdline += "--rate=" + self.ids.txtRateRFD.text + " "
         if self.ids.chkRpmRFD.active:
             cmdline += "--rpm=" + self.ids.txtRpmRFD.text + " "
+        if self.ids.tglSingleSidedRFD.state == "down":
+            cmdline += "--single-sided "
         if (sys.platform == 'win32') or (sys.platform == 'darwin'):
             cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
         else:
@@ -216,9 +231,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeWTD.state == "down":
                 cmdline = "\"gw.exe write "
             else:
-                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" write "
+                cmdline = "\"python \"" + self.gw_application_folder + self.gw_script + "\" write "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' write "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' write "
         if self.ids.chkAdjustSpeed.active:
             cmdline += "--adjust-speed "
         if self.ids.chkFirstCylToWrite.active:
@@ -245,9 +260,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeErase.state == "down":
                 cmdline = "\"gw.exe erase "
             else:
-                cmdline = "\"python \"" + self.gw_application_folder + "gw.py\" erase "
+                cmdline = "\"python \"" + self.gw_application_folder + self.gw_script + "\" erase "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' erase "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' erase "
         if self.ids.chkFirstCylToErase.active:
             cmdline += "--scyl=" + self.ids.txtFirstCylToErase.text + " "
         if self.ids.chkLastCylToErase.active:
@@ -272,9 +287,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeDelays.state == "down":
                 cmdline = "\"gw.exe delays "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" delays "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" delays "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' delays "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' delays "
         if self.ids.chkDelayAfterSelect.active:
             cmdline += "--select=" + self.ids.txtDelayAfterSelect.text + " "
         if self.ids.chkDelayBetweenSteps.active:
@@ -302,9 +317,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeFW.state == "down":
                 cmdline = "\"gw.exe update "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" update "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" update "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' update "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' update "
         if self.ids.tglBootloader.state == "down":
             cmdline += "--bootloader "
         if sys.platform == 'win32':
@@ -326,9 +341,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExePinLevel.state == "down":
                 cmdline = "\"gw.exe pin "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" pin "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" pin "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' pin "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' pin "
         cmdline += self.ids.txtPinLevel.text
         if self.ids.chkHighLevel.active == 'True':
             cmdline += " H"
@@ -351,9 +366,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeReset.state == "down":
                 cmdline = "\"gw.exe reset "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" reset "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" reset "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' reset "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' reset "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -370,9 +385,9 @@ class MainScreen(Screen):
             if self.ids.tglUseExeBandwidth.state == "down":
                 cmdline = "\"gw.exe bandwidth "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" bandwidth "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" bandwidth "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' bandwidth "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' bandwidth "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -384,14 +399,13 @@ class MainScreen(Screen):
             self.set_exe_mode("True")
         else:
             self.set_exe_mode("False")
-
         if sys.platform == 'win32':
             if self.ids.tglUseExeInfo.state == "down":
                 cmdline = "\"gw.exe info "
             else:
-                cmdline = "python \"" + self.gw_application_folder + "gw.py\" info "
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" info "
         else:
-            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + "gw.py\' info "
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' info "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -574,7 +588,6 @@ class MainScreen(Screen):
         self.create_comm_buttons(box_layout)
 
     def create_comm_buttons(self, box_layout):
-        self.gw_comm_port = ""
         box_layout.clear_widgets()
         for comport in serial.tools.list_ports.comports():
             btn = ToggleButton(markup=True)
@@ -582,6 +595,9 @@ class MainScreen(Screen):
             btn.group = "comm"
             btn.bind(on_release=lambda x=btn:self.change_command_lines_port(x))
             box_layout.add_widget(btn)
+
+    def clear_port(self):
+        self.gw_comm_port = ""
 
     def find_str(self, s, char):
         index = 0
@@ -689,8 +705,7 @@ class MainScreen(Screen):
         if self.ids.tglUseExeRFD.state == "down" or self.ids.tglUseExeWTD.state == "down" \
                 or self.ids.tglUseExeErase.state == "down" or self.ids.tglUseExeDelays.state == "down" \
                 or self.ids.tglUseExeFW.state == "down" or self.ids.tglUseExePinLevel.state == "down" \
-                or self.ids.tglUseExeReset.state == "down" or self.ids.tglUseExeBandwidth.state == "down" \
-                or self.ids.tglUseExeInfo.state == "down":
+                or self.ids.tglUseExeReset.state == "down" or self.ids.tglUseExeBandwidth.state == "down":
             config.set('gbMiscellaneous', 'tglUseExeMode', 'True')
         else:
             config.set('gbMiscellaneous', 'tglUseExeMode', 'False')
@@ -734,6 +749,7 @@ class MainScreen(Screen):
         else:
             config.set('gbReadFromDisk', 'chkRpmRFD', 'False')
         config.set('gbReadFromDisk', 'txtRpmRFD', self.ids.txtRpmRFD.text)
+
         if self.ids.tglSingleSidedRFD.state == "down":
             config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'True')
         else:
@@ -843,13 +859,9 @@ class MainScreen(Screen):
         config.set('gbPinLevel', 'txtPinLevel', self.ids.txtPinLevel.text)
         config.set('gbPinLevel', 'txtCommandLinePinLevel', self.ids.txtCommandLinePinLevel.text)
 
-        # reset
-        config.add_section('gbReset')
-        config.set('gbReset', 'txtCommandLineReset', self.ids.txtCommandLineReset.text)
-
-        # info
-        config.add_section('gbInfo')
-        config.set('gbInfo', 'txtCommandLineInfo', self.ids.txtCommandLineInfo.text)
+        # reset - nothing to do
+        # bandwidth - nothing to do
+        # info - nothing to do
 
         # write the file
         with open(self.gw_iniFilespec, 'w') as configfile:
@@ -863,10 +875,13 @@ class MainScreen(Screen):
 
         try:
 
+            # miscellaneous
             state = config.get('gbMiscellaneous', 'tglUseExeMode')
             self.set_exe_mode(state)
             self.main_screen.gw_RFDFilename = config.get('gbReadFromDisk', 'gw_RFDFilename')
             self.main_screen.gw_RFDFolder = config.get('gbReadFromDisk', 'gw_RFDFolder')
+
+            # read from disk
             state = config.get('gbReadFromDisk', 'chkDoubleStepRFD')
             if state == 'True':
                 self.ids.chkDoubleStepRFD.active = True
@@ -886,6 +901,11 @@ class MainScreen(Screen):
                 self.ids.chkLastCylToRead.active = True
                 self.ids.chkLastCylToRead.state = 'down'
             self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
+            state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
+            if state == 'True':
+                self.ids.chkSelectDriveRFD.active = True
+                self.ids.chkSelectDriveRFD.state = 'down'
+            self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
             state = config.get('gbReadFromDisk', 'chkRateRFD')
             if state == 'True':
                 self.ids.chkRateRFD.active = True
@@ -896,11 +916,6 @@ class MainScreen(Screen):
                 self.ids.chkRpmRFD.active = True
                 self.ids.chkRpmRFD.state = 'down'
             self.ids.txtRpmRFD.text = config.get('gbReadFromDisk', 'txtRpmRFD')
-            state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
-            if state == 'True':
-                self.ids.chkSelectDriveRFD.active = True
-                self.ids.chkSelectDriveRFD.state = 'down'
-            self.ids.txtSelectDriveRFD.text = config.get('gbReadFromDisk', 'txtSelectDriveRFD')
             state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
             if state == 'True':
                 self.ids.tglSingleSidedRFD.active = True
@@ -1004,6 +1019,7 @@ class MainScreen(Screen):
                 self.ids.chkLowLevel.state = 'down'
 
             # reset - nothing to do
+            # bandwidth - nothing to do
             # info - nothing to do
 
         except:
@@ -1111,7 +1127,8 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.38 / Host Tools v0.18 - by Don Mankin"
+    title = "GreaseweazleGUI v0.39 / Host Tools v0.18 - by Don Mankin"
+
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
         return GUI

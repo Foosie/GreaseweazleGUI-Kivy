@@ -25,13 +25,13 @@
         chkLastCylToRead: chkLastCylToRead
         txtLastCylToRead: txtLastCylToRead
         chkSelectDriveRFD: chkSelectDriveRFD
-        chkRateRFD: chkRateRFD
-        txtRateRFD: txtRateRFD
-        chkRpmRFD: chkRpmRFD
-        txtRpmRFD: txtRpmRFD
         tglUseExeRFD: tglUseExeRFD
         tglSingleSidedRFD: tglSingleSidedRFD
         chkDoubleStepRFD: chkDoubleStepRFD
+        chkRateRFD: chkRateRFD
+        txtRateRFD: txtRateRFD
+        chkRateRFD: chkRateRFD
+        txtRpmRFD: txtRpmRFD
 
         # write to disk
         txtCommandLineWTD: txtCommandLineWTD
@@ -663,3 +663,6 @@
                     Button:
                         text: "Refresh Available Ports"
                         on_release: root.create_comm_buttons(commButtonLayout)
+                    Button:
+                        text: "Clear Port"
+                        on_release: root.clear_port()
