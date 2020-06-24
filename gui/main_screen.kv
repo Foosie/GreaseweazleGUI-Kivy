@@ -89,6 +89,7 @@
         # info
         txtCommandLineInfo: txtCommandLineInfo
         tglUseExeInfo: tglUseExeInfo
+        tglInfoBootloader: tglInfoBootloader
 
         # creating the size
         # and the alignment of the tab
@@ -639,11 +640,18 @@
                     id:txtCommandLineInfo
                     size_hint: 1,0.5
                     text: "python.exe gw.py info COM11"
-                ToggleButton:
-                    id: tglUseExeInfo
-                    text: "Use EXE"
-                    state: "normal"
-                    on_release: root.build_info()
+                BoxLayout:
+                    orientation: "horizontal"
+                    ToggleButton:
+                        id: tglUseExeInfo
+                        text: "Use EXE"
+                        state: "normal"
+                        on_release: root.build_info()
+                    ToggleButton:
+                        id: tglInfoBootloader
+                        text: "Bootloader"
+                        state: "normal"
+                        on_release: root.build_info()
                 Button:
                     id: btnLaunchInfo
                     text: "Launch"

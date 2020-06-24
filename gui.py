@@ -107,6 +107,7 @@ class MainScreen(Screen):
     # info
     txtCommandLineInfo = ObjectProperty(TextInput())
     tglUseExeInfo = ObjectProperty(ToggleButton())
+    tglInfoBootloader = ObjectProperty(ToggleButton())
 
     # global variables
     gw_application_folder = ObjectProperty(None)
@@ -406,6 +407,8 @@ class MainScreen(Screen):
                 cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" info "
         else:
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' info "
+        if self.ids.tglInfoBootloader.state == "down":
+            cmdline += "--bootloader "
         if sys.platform == 'win32' or sys.platform == 'darwin':
             cmdline += self.gw_comm_port + "\""
         else:
@@ -1127,7 +1130,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.39 / Host Tools v0.18 - by Don Mankin"
+    title = "GreaseweazleGUI v0.40 / Host Tools v0.19 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
