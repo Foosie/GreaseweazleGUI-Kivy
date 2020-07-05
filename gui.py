@@ -58,11 +58,14 @@ class MainScreen(Screen):
     txtRpmRFD = ObjectProperty(TextInput())
     tglUseExeRFD = ObjectProperty(ToggleButton())
     tglSingleSidedRFD = ObjectProperty(ToggleButton())
+    tglSingleSidedLegacyRFD = ObjectProperty(ToggleButton())
     chkDoubleStepRFD = ObjectProperty(CheckBox())
 
     # write to disk
     txtCommandLineWTD = ObjectProperty(TextInput())
     chkAdjustSpeed = ObjectProperty(CheckBox())
+    chkDoubleStepWTD = ObjectProperty(CheckBox())
+    chkEraseEmptyWTD = ObjectProperty(CheckBox())
     chkFirstCylToWrite = ObjectProperty(CheckBox())
     txtFirstCylToWrite = ObjectProperty(TextInput())
     chkLastCylToWrite = ObjectProperty(CheckBox())
@@ -215,10 +218,14 @@ class MainScreen(Screen):
             cmdline += "--rpm=" + self.ids.txtRpmRFD.text + " "
         if self.ids.tglSingleSidedRFD.state == "down":
             cmdline += "--single-sided "
+        cmdline += "'" + file_spec;
+        if self.ids.tglSingleSidedRFD.state == "down" and self.ids.tglSingleSidedLegacyRFD.state == "down":
+            cmdline += "::legacy_ss"
+        cmdline += "' " + self.gw_comm_port;
         if (sys.platform == 'win32') or (sys.platform == 'darwin'):
-            cmdline += "'" + file_spec + "' " + self.gw_comm_port + "\""
+            cmdline += "\""
         else:
-            cmdline += "'" + file_spec + "' " + self.gw_comm_port + ";read -n1\""
+            cmdline +=  ";read -n1\""
         self.ids.txtCommandLineRFD.text = cmdline
 
     def build_write_to_disk(self):
@@ -237,6 +244,10 @@ class MainScreen(Screen):
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' write "
         if self.ids.chkAdjustSpeed.active:
             cmdline += "--adjust-speed "
+        if self.ids.chkDoubleStepWTD.active:
+            cmdline += "--double-step "
+        if self.ids.chkEraseEmptyWTD.active:
+            cmdline += "--erase-empty "
         if self.ids.chkFirstCylToWrite.active:
             cmdline += "--scyl=" + self.ids.txtFirstCylToWrite.text + " "
         if self.ids.chkLastCylToWrite.active:
@@ -752,11 +763,14 @@ class MainScreen(Screen):
         else:
             config.set('gbReadFromDisk', 'chkRpmRFD', 'False')
         config.set('gbReadFromDisk', 'txtRpmRFD', self.ids.txtRpmRFD.text)
-
         if self.ids.tglSingleSidedRFD.state == "down":
             config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'True')
         else:
             config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'False')
+        if self.ids.tglSingleSidedLegacyRFD.state == "down":
+            config.set('gbReadFromDisk', 'tglSingleSidedLegacyRFD', 'True')
+        else:
+            config.set('gbReadFromDisk', 'tglSingleSidedLegacyRFD', 'False')
 
         # write to disk
         config.add_section('gbWriteToDisk')
@@ -767,6 +781,14 @@ class MainScreen(Screen):
             config.set('gbWriteToDisk', 'chkAdjustSpeed', 'True')
         else:
             config.set('gbWriteToDisk', 'chkAdjustSpeed', 'False')
+        if self.ids.chkDoubleStepWTD.active:
+            config.set('gbWriteToDisk', 'chkDoubleStepWTD', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkDoubleStepWTD', 'False')
+        if self.ids.chkEraseEmptyWTD.active:
+            config.set('gbWriteToDisk', 'chkEraseEmptyWTD', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkEraseEmptyWTD', 'False')
         if self.ids.chkFirstCylToWrite.active:
             config.set('gbWriteToDisk', 'chkFirstCylToWrite', 'True')
         else:
@@ -923,6 +945,10 @@ class MainScreen(Screen):
             if state == 'True':
                 self.ids.tglSingleSidedRFD.active = True
                 self.ids.tglSingleSidedRFD.state = 'down'
+            state = config.get('gbReadFromDisk', 'tglSingleSidedLegacyRFD')
+            if state == 'True':
+                self.ids.tglSingleSidedLegacyRFD.active = True
+                self.ids.tglSingleSidedLegacyRFD.state = 'down'
 
             # write to disk
             self.main_screen.gw_WTDFilename = config.get('gbWriteToDisk', 'gw_WTDFilename')
@@ -931,6 +957,14 @@ class MainScreen(Screen):
             if state == 'True':
                 self.ids.chkAdjustSpeed.active = True
                 self.ids.chkAdjustSpeed.state = 'down'
+            state = config.get('gbWriteToDisk', 'chkDoubleSpeedWTD')
+            if state == 'True':
+                self.ids.chkDoubleSpeedWTD.active = True
+                self.ids.chkDoubleSpeedWTD.state = 'down'
+            state = config.get('gbWriteToDisk', 'chkEraseEmptyWTD')
+            if state == 'True':
+                self.ids.chkEraseEmptyWTD.active = True
+                self.ids.chkEraseEmptyWTD.state = 'down'
             state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
             if state == 'True':
                 self.ids.chkFirstCylToWrite.active = True
@@ -1130,7 +1164,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.40 / Host Tools v0.19 - by Don Mankin"
+    title = "GreaseweazleGUI v0.41 / Host Tools v0.20 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)

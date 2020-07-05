@@ -27,6 +27,7 @@
         chkSelectDriveRFD: chkSelectDriveRFD
         tglUseExeRFD: tglUseExeRFD
         tglSingleSidedRFD: tglSingleSidedRFD
+        tglSingleSidedLegacyRFD: tglSingleSidedLegacyRFD
         chkDoubleStepRFD: chkDoubleStepRFD
         chkRateRFD: chkRateRFD
         txtRateRFD: txtRateRFD
@@ -36,6 +37,8 @@
         # write to disk
         txtCommandLineWTD: txtCommandLineWTD
         chkAdjustSpeed: chkAdjustSpeed
+        chkDoubleStepWTD: chkDoubleStepWTD
+        chkEraseEmptyWTD: chkEraseEmptyWTD
         chkFirstCylToWrite: chkFirstCylToWrite
         txtFirstCylToWrite: txtFirstCylToWrite
         chkLastCylToWrite: chkLastCylToWrite
@@ -204,7 +207,7 @@
                         disabled: not chkRpmRFD.active
                 GridLayout:
                     rows: 1
-                    cols: 4
+                    cols: 5
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
@@ -217,6 +220,12 @@
                         id: tglSingleSidedRFD
                         text: "Single Sided"
                         state: "normal"
+                        on_release: root.build_read_from_disk()
+                    ToggleButton:
+                        id: tglSingleSidedLegacyRFD
+                        text: "Legacy"
+                        state: "normal"
+                        disabled: not tglSingleSidedRFD.state == "down"
                         on_release: root.build_read_from_disk()
                     Button:
                         id: btnSelectFolderRFD
@@ -247,7 +256,7 @@
                     size_hint: 1,0.5
                     text: "python gw.py write --scyl=0 --ecyl=79 --adjust-speed '/home/user/mydisk.scp' COM11"
                 GridLayout:
-                    rows: 4
+                    rows: 6
                     cols: 3
                     padding: 10
                     spacing: 10
@@ -256,6 +265,26 @@
                         on_release: root.build_write_to_disk()
                     Label:
                         text: "Adjust Speed"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    Label:
+                        text: " "
+                    CheckBox:
+                        id: chkDoubleStepWTD
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "Double Step"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    Label:
+                        text: " "
+                    CheckBox:
+                        id: chkEraseEmptyWTD
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "Erase Empty"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
