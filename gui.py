@@ -434,7 +434,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineRFD.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineRFD.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineRFD.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineRFD.text
@@ -450,7 +451,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineWTD.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineWTD.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineWTD.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineWTD.text
@@ -466,7 +468,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineErase.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineErase.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineErase.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineErase.text
@@ -482,7 +485,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineDelays.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineDelays.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineDelays.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineDelays.text
@@ -498,7 +502,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineFirmware.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineFirmware.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineFirmware.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineFirmware.text
@@ -515,7 +520,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLinePinLevel.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLinePinLevel.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLinePinLevel.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLinePinLevel.text
@@ -531,7 +537,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineReset.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineReset.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineReset.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineReset.text
@@ -547,7 +554,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineBandwidth.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineBandwidth.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineBandwidth.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineBandwidth.text
@@ -563,7 +571,8 @@ class MainScreen(Screen):
                 subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
             else:
                 if sys.platform == 'darwin':
-                    command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineInfo.text + "\"'"
+                    #command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineInfo.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineInfo.text + "'"
                     subprocess.Popen(command_line, shell=True, env=os.environ.copy())
                 else:
                     command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineInfo.text
@@ -1164,7 +1173,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.41 / Host Tools v0.20 - by Don Mankin"
+    title = "GreaseweazleGUI v0.42 / Host Tools v0.20 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
