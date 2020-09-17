@@ -966,10 +966,10 @@ class MainScreen(Screen):
             if state == 'True':
                 self.ids.chkAdjustSpeed.active = True
                 self.ids.chkAdjustSpeed.state = 'down'
-            state = config.get('gbWriteToDisk', 'chkDoubleSpeedWTD')
+            state = config.get('gbWriteToDisk', 'chkDoubleStepWTD')
             if state == 'True':
-                self.ids.chkDoubleSpeedWTD.active = True
-                self.ids.chkDoubleSpeedWTD.state = 'down'
+                self.ids.chkDoubleStepWTD.active = True
+                self.ids.chkDoubleStepWTD.state = 'down'
             state = config.get('gbWriteToDisk', 'chkEraseEmptyWTD')
             if state == 'True':
                 self.ids.chkEraseEmptyWTD.active = True
@@ -1173,7 +1173,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.42 / Host Tools v0.20 - by Don Mankin"
+    title = "GreaseweazleGUI v0.44 / Host Tools v0.20 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
