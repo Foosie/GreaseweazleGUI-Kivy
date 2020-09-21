@@ -99,6 +99,12 @@ class MainScreen(Screen):
     txtCommandLinePinLevel = ObjectProperty(TextInput())
     tglUseExePinLevel = ObjectProperty(ToggleButton())
 
+    # seek cylinder
+    txtSeekCyl = ObjectProperty(TextInput())
+    txtCommandLineSeekCyl = ObjectProperty(TextInput())
+    chkSelectDriveSeelCyl = ObjectProperty(CheckBox())
+    tglUseExeSeekCyl = ObjectProperty(ToggleButton())
+
     # reset
     txtCommandLineReset = ObjectProperty(TextInput())
     tglUseExeReset = ObjectProperty(ToggleButton())
@@ -318,6 +324,25 @@ class MainScreen(Screen):
             cmdline += self.gw_comm_port + ";read -n1\""
         self.ids.txtCommandLineDelays.text = cmdline
 
+    def build_seek_cyl(self):
+        if self.ids.tglUseExeSeekCyl.state == "down":
+            self.set_exe_mode("True")
+        else:
+            self.set_exe_mode("False")
+
+        if sys.platform == 'win32':
+            if self.ids.tglUseExeDelays.state == "down":
+                cmdline = "gw.exe seek "
+            else:
+                cmdline = "python \"" + self.gw_application_folder + self.gw_script + "\" seek "
+        else:
+            cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' seek "
+
+        if self.ids.chkSelectDriveSeekCyl.active:
+            cmdline += "--drive=" + self.ids.txtSelectDriveSeekCyl.text + " "
+
+        self.ids.txtCommandLineSeekCyl.text = cmdline + self.ids.txtSeekCyl.text
+
     def build_update_firmware(self):
         if self.ids.tglUseExeFW.state == "down":
             self.set_exe_mode("True")
@@ -494,6 +519,23 @@ class MainScreen(Screen):
         else:
             self.parent.parent.ids['screen_manager'].current = 'error_screen'
 
+    def process_seek_cyl(self):
+        if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
+            self.iniWriteFile()
+            if sys.platform == 'win32':
+                command_line = "C:\Windows\System32\cmd.exe /K " + self.ids.txtCommandLineSeekCyl.text
+                subprocess.Popen(command_line, creationflags=CREATE_NEW_CONSOLE, env=os.environ.copy())
+            else:
+                if sys.platform == 'darwin':
+                    # command_line = "osascript -e 'tell application \"Terminal\" to do script \"" + self.ids.txtCommandLineSeekCyl.text + "\"'"
+                    command_line = "osascript -e 'tell application \"Terminal\" to do script " + self.ids.txtCommandLineSeekCyl.text + "'"
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+                else:
+                    command_line = "gnome-terminal -x bash -c " + self.ids.txtCommandLineSeekCyl.text
+                    subprocess.Popen(command_line, shell=True, env=os.environ.copy())
+        else:
+            self.parent.parent.ids['screen_manager'].current = 'error_screen'
+
     def process_update_firmware(self):
         if not self.checkIfProcessRunningByScript("gw.py") and not self.checkIfProcessRunningByScript("gw.exe"):
             self.iniWriteFile()
@@ -592,6 +634,9 @@ class MainScreen(Screen):
     def got_focus_set_delays(self):
         self.build_set_delays()
 
+    def got_focus_seek_cyl(self):
+        self.build_seek_cyl()
+
     def got_focus_update_firmware(self):
         self.build_update_firmware()
 
@@ -680,6 +725,8 @@ class MainScreen(Screen):
             self.ids.tglUseExeBandwidth.state = 'down'
             self.ids.tglUseExeInfo.active = True
             self.ids.tglUseExeInfo.state = 'down'
+            self.ids.tglUseExeSeekCyl.active = True
+            self.ids.tglUseExeSeekCyl.state = 'down'
         else:
             self.ids.tglUseExeRFD.active = False
             self.ids.tglUseExeRFD.state = 'normal'
@@ -701,6 +748,8 @@ class MainScreen(Screen):
             self.ids.tglUseExeBandwidth.state = 'normal'
             self.ids.tglUseExeInfo.active = False
             self.ids.tglUseExeInfo.state = 'normal'
+            self.ids.tglUseExeSeekCyl.active = False
+            self.ids.tglUseExeSeekCyl.state = 'normal'
 
     def ini_read(self, section, option, filespec):
         config = configparser.ConfigParser()
@@ -893,6 +942,16 @@ class MainScreen(Screen):
         config.set('gbPinLevel', 'txtPinLevel', self.ids.txtPinLevel.text)
         config.set('gbPinLevel', 'txtCommandLinePinLevel', self.ids.txtCommandLinePinLevel.text)
 
+        # seek cylinder
+        config.add_section('gbSeekCyl')
+        if self.ids.chkSelectDriveSeekCyl.active:
+            config.set('gbSeekCyl', 'chkSelectDriveSeekCyl', 'True')
+        else:
+            config.set('gbSeekCyl', 'chkSelectDriveSeekCyl', 'False')
+        config.set('gbSeekCyl', 'txtSelectDriveSeekCyl', self.ids.txtSelectDriveSeekCyl.text)
+        config.set('gbSeekCyl', 'txtCommandLineSeekCyl', self.ids.txtCommandLineSeekCyl.text)
+        config.set('gbSeekCyl', 'txtSeekCyl', self.ids.txtSeekCyl.text)
+
         # reset - nothing to do
         # bandwidth - nothing to do
         # info - nothing to do
@@ -1064,6 +1123,15 @@ class MainScreen(Screen):
                 self.ids.chkLowLevel.active = True
                 self.ids.chkLowLevel.state = 'down'
 
+            # seek cylinder
+            self.ids.txtCommandLineSeekCyl.text = config.get('gbSeekCyl', 'txtCommandLineSeekCyl')
+            self.ids.txtSeekCyl.text = config.get('gbSeekCyl', 'txtSeekCyl')
+            state = config.get('gbSeekCyl', 'chkSelectDriveSeekCyl')
+            if state == 'True':
+                self.ids.chkSelectDriveSeekCyl.active = True
+                self.ids.chkSelectDriveSeekCyl.state = 'down'
+            self.ids.txtSelectDriveSeekCyl.text = config.get('gbSeekCyl', 'txtSelectDriveSeekCyl')
+
             # reset - nothing to do
             # bandwidth - nothing to do
             # info - nothing to do
@@ -1173,7 +1241,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.44 / Host Tools v0.20 - by Don Mankin"
+    title = "GreaseweazleGUI v0.45 / Host Tools v0.21 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)

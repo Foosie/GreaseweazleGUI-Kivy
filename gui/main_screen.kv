@@ -74,6 +74,13 @@
         tglBootloader: tglBootloader
         tglUseExeFW: tglUseExeFW
 
+        # seek cylinder
+        txtSeekCyl: txtSeekCyl
+        txtCommandLineSeekCyl: txtCommandLineSeekCyl
+        chkSelectDriveSeekCyl: chkSelectDriveSeekCyl
+        txtSelectDriveSeekCyl: txtSelectDriveSeekCyl
+        tglUseExeSeekCyl: tglUseExeSeekCyl
+
         # pin level
         txtPinLevel: txtPinLevel
         chkHighLevel: chkHighLevel
@@ -100,7 +107,7 @@
         pos_hint: {'center_x': .5, 'center_y': .5}
 
         do_default_tab: False
-        tab_width: self.width / 10
+        tab_width: self.width / 11
 
         # READ FROM DISK
         FocusTabbedPanelItem:
@@ -527,6 +534,61 @@
                     size_hint: 1,0.2
                     text: "Launch"
                     on_release: root.process_set_delays()
+
+
+        # SEEK CYLINDER
+        FocusTabbedPanelItem:
+            text: ' Seek '
+            on_focus: if self.focus: root.got_focus_seek_cyl()
+            BoxLayout:
+                orientation: "vertical"
+                TextInput:
+                    id:txtCommandLineSeekCyl
+                    #size_hint: 1,0.5
+                    text: "python gw.py seek --drive=A 20"
+                GridLayout:
+                    rows: 3
+                    cols: 3
+                    padding: 10
+                    spacing: 10
+                    Label:
+                        text: " "
+                        #text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    Label:
+                        text: "Seek cylinder"
+                        #text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSeekCyl
+                        text: "0"
+                        on_text: root.build_seek_cyl()
+                    CheckBox:
+                        id: chkSelectDriveSeekCyl
+                        on_release: root.build_seek_cyl()
+                    Label:
+                        text: "F7 Select Drive"
+                        #text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtSelectDriveSeekCyl
+                        text: "0"
+                        on_text: root.build_seek_cyl()
+                        disabled: not chkSelectDriveSeekCyl.active
+                ToggleButton:
+                    id: tglUseExeSeekCyl
+                    text: "Use EXE"
+                    state: "normal"
+                    on_release: root.build_seek_cyl()
+                Button:
+                    id: btnLaunchSeekCyl
+                    #size_hint: 1,0.2
+                    text: "Launch"
+                    on_release: root.process_seek_cyl()
+
 
         # UPDATE FIRMWARE
         FocusTabbedPanelItem:
