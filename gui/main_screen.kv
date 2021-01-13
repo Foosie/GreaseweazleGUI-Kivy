@@ -20,42 +20,46 @@
         txtCommandLineRFD: txtCommandLineRFD
         chkRevsPerTrack: chkRevsPerTrack
         txtRevsPerTrack: txtRevsPerTrack
-        chkFirstCylToRead: chkFirstCylToRead
-        txtFirstCylToRead: txtFirstCylToRead
-        chkLastCylToRead: chkLastCylToRead
-        txtLastCylToRead: txtLastCylToRead
+        chkCylSetsRFD: chkCylSetsRFD
+        txtCylSetsRFD: txtCylSetsRFD
+        chkHeadSetsRFD: chkHeadSetsRFD
+        txtHeadSetsRFD: txtHeadSetsRFD
         chkSelectDriveRFD: chkSelectDriveRFD
         tglUseExeRFD: tglUseExeRFD
-        tglSingleSidedRFD: tglSingleSidedRFD
         tglSingleSidedLegacyRFD: tglSingleSidedLegacyRFD
         chkDoubleStepRFD: chkDoubleStepRFD
+        txtDoubleStepRFD: txtDoubleStepRFD
         chkRateRFD: chkRateRFD
         txtRateRFD: txtRateRFD
         chkRateRFD: chkRateRFD
+        tglFlippyTeacRFD: tglFlippyTeacRFD
+        tglFlippyPanasonicRFD: tglFlippyPanasonicRFD
         txtRpmRFD: txtRpmRFD
 
         # write to disk
         txtCommandLineWTD: txtCommandLineWTD
-        chkAdjustSpeed: chkAdjustSpeed
         chkDoubleStepWTD: chkDoubleStepWTD
+        txtDoubleStepWTD: txtDoubleStepWTD
         chkEraseEmptyWTD: chkEraseEmptyWTD
-        chkFirstCylToWrite: chkFirstCylToWrite
-        txtFirstCylToWrite: txtFirstCylToWrite
-        chkLastCylToWrite: chkLastCylToWrite
-        txtLastCylToWrite: txtLastCylToWrite
+        chkCylSetsWTD: chkCylSetsWTD
+        txtCylSetsWTD: txtCylSetsWTD
+        chkHeadSetsWTD: chkHeadSetsWTD
+        txtHeadSetsWTD: txtHeadSetsWTD
         txtSelectDriveWTD: txtSelectDriveWTD
         tglUseExeWTD: tglUseExeWTD
-        tglSingleSidedWTD: tglSingleSidedWTD
+        tglFlippyTeacWTD: tglFlippyTeacWTD
+        tglFlippyPanasonicWTD: tglFlippyPanasonicWTD
 
          # erase disk
         txtCommandLineErase: txtCommandLineErase
-        chkFirstCylToErase: chkFirstCylToErase
-        txtFirstCylToErase: txtFirstCylToErase
-        chkLastCylToErase: chkLastCylToErase
-        txtLastCylToErase: txtLastCylToErase
+        chkCylSetsErase: chkCylSetsErase
+        txtCylSetsErase: txtCylSetsErase
+        chkHeadSetsErase: chkHeadSetsErase
+        txtHeadSetsErase: txtHeadSetsErase
         txtSelectDriveErase: txtSelectDriveErase
         tglUseExeErase: tglUseExeErase
-        tglSingleSidedErase: tglSingleSidedErase
+        tglFlippyTeacErase: tglFlippyTeacErase
+        tglFlippyPanasonicErase: tglFlippyPanasonicErase
 
         # set delays
         txtCommandLineDelays: txtCommandLineDelays
@@ -118,7 +122,7 @@
                 TextInput:
                     id: txtCommandLineRFD
                     size_hint: 1,0.5
-                    text: "python. gw.py read --revs=3 --scyl=0 --ecyl=34 --single-sided '/home/user/mydisk.scp' COM1"
+                    text: "python. gw.py read '/home/user/mydisk.scp'"
                 GridLayout:
                     rows: 7
                     cols: 3
@@ -132,8 +136,11 @@
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
-                    Label:
-                        text: " "
+                    TextInput:
+                        id: txtDoubleStepRFD
+                        text: "1"
+                        on_text: root.build_read_from_disk()
+                        disabled: not chkDoubleStepRFD.active
                     CheckBox:
                         id: chkRevsPerTrack
                         on_release: root.build_read_from_disk()
@@ -148,31 +155,31 @@
                         on_text: root.build_read_from_disk()
                         disabled: not chkRevsPerTrack.active
                     CheckBox:
-                        id: chkFirstCylToRead
+                        id: chkCylSetsRFD
                         on_release: root.build_read_from_disk()
                     Label:
-                        text: "First cylinder to read"
+                        text: "Cylinder sets"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtFirstCylToRead
-                        text: "0"
+                        id: txtCylSetsRFD
+                        text: "0-34,35-79"
                         on_text: root.build_read_from_disk()
-                        disabled: not chkFirstCylToRead.active
+                        disabled: not chkCylSetsRFD.active
                     CheckBox:
-                        id: chkLastCylToRead
+                        id: chkHeadSetsRFD
                         on_release: root.build_read_from_disk()
                     Label:
-                        text: "Last cylinder to read"
+                        text: "Head sets"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtLastCylToRead
-                        text: "79"
+                        id: txtHeadSetsRFD
+                        text: "0,1"
                         on_text: root.build_read_from_disk()
-                        disabled: not chkLastCylToRead.active
+                        disabled: not chkHeadSetsRFD.active
                     CheckBox:
                         id: chkSelectDriveRFD
                         on_release: root.build_read_from_disk()
@@ -214,7 +221,7 @@
                         disabled: not chkRpmRFD.active
                 GridLayout:
                     rows: 1
-                    cols: 5
+                    cols: 6
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
@@ -224,15 +231,28 @@
                         state: "normal"
                         on_release: root.build_read_from_disk()
                     ToggleButton:
-                        id: tglSingleSidedRFD
-                        text: "Single Sided"
+                        id: tglFlippyTeacRFD
+                        text: "Flippy\nTeac"
                         state: "normal"
-                        on_release: root.build_read_from_disk()
+                        on_release:
+                            tglFlippyPanasonicRFD.active = False
+                            tglFlippyPanasonicRFD.state = "normal"
+                            root.build_read_from_disk()
+                    ToggleButton:
+                        id: tglFlippyPanasonicRFD
+                        text: "Flippy\nPanasonic"
+                        state: "normal"
+                        on_release:
+                            tglFlippyTeacRFD.active = False
+                            tglFlippyTeacRFD.state = "normal"
+                            root.build_read_from_disk()
                     ToggleButton:
                         id: tglSingleSidedLegacyRFD
                         text: "Legacy"
-                        state: "normal"
-                        disabled: not tglSingleSidedRFD.state == "down"
+                        state:
+                            "normal" if txtHeadSetsRFD.text == "0" else "normal"
+                        disabled:
+                            False if (chkHeadSetsRFD.state == "down") and (txtHeadSetsRFD.text == "0") else True
                         on_release: root.build_read_from_disk()
                     Button:
                         id: btnSelectFolderRFD
@@ -263,15 +283,15 @@
                     size_hint: 1,0.5
                     text: "python gw.py write --scyl=0 --ecyl=79 --adjust-speed '/home/user/mydisk.scp' COM11"
                 GridLayout:
-                    rows: 6
+                    rows: 5
                     cols: 3
                     padding: 10
                     spacing: 10
                     CheckBox:
-                        id: chkAdjustSpeed
+                        id: chkEraseEmptyWTD
                         on_release: root.build_write_to_disk()
                     Label:
-                        text: "Adjust Speed"
+                        text: "Erase Empty"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
@@ -285,43 +305,36 @@
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
-                    Label:
-                        text: " "
+                    TextInput:
+                        id: txtDoubleStepWTD
+                        text: "1"
+                        on_text: root.build_write_to_disk()
+                        disabled: not chkDoubleStepWTD.active
                     CheckBox:
-                        id: chkEraseEmptyWTD
+                        id: chkCylSetsWTD
                         on_release: root.build_write_to_disk()
                     Label:
-                        text: "Erase Empty"
-                        text_size: self.size
-                        halign: "left"
-                        valign: 'middle'
-                    Label:
-                        text: " "
-                    CheckBox:
-                        id: chkFirstCylToWrite
-                        on_release: root.build_write_to_disk()
-                    Label:
-                        text: "First cylinder to write"
+                        text: "Cylinder sets"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtFirstCylToWrite
-                        text: "0"
-                        disabled: not chkFirstCylToWrite.active
+                        id: txtCylSetsWTD
+                        text: "0-34,35-79"
+                        disabled: not chkCylSetsWTD.active
                         on_text: root.build_write_to_disk()
                     CheckBox:
-                        id: chkLastCylToWrite
+                        id: chkHeadSetsWTD
                         on_release: root.build_write_to_disk()
                     Label:
-                        text: "Last cylinder to write"
+                        text: "Head sets"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtLastCylToWrite
-                        text: "79"
-                        disabled: not chkLastCylToWrite.active
+                        id: txtHeadSetsWTD
+                        text: "0,1"
+                        disabled: not chkHeadSetsWTD.active
                         on_text: root.build_write_to_disk()
                     CheckBox:
                         id: chkSelectDriveWTD
@@ -338,7 +351,7 @@
                         disabled: not chkSelectDriveWTD.active
                 GridLayout:
                     rows: 1
-                    cols: 3
+                    cols: 4
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
@@ -348,10 +361,21 @@
                         state: "normal"
                         on_release: root.build_write_to_disk()
                     ToggleButton:
-                        id: tglSingleSidedWTD
-                        text: "Single Sided"
+                        id: tglFlippyTeacWTD
+                        text: "Flippy\nTeac"
                         state: "normal"
-                        on_release: root.build_write_to_disk()
+                        on_release:
+                            tglFlippyPanasonicWTD.active = False
+                            tglFlippyPanasonicWTD.state = "normal"
+                            root.build_write_to_disk()
+                    ToggleButton:
+                        id: tglFlippyPanasonicWTD
+                        text: "Flippy\nPanasonic"
+                        state: "normal"
+                        on_release:
+                            tglFlippyTeacWTD.active = False
+                            tglFlippyTeacWTD.state = "normal"
+                            root.build_write_to_disk()
                     Button:
                         id: btnSelectFileWTD
                         text: "Select File"
@@ -374,37 +398,37 @@
                 TextInput:
                     id:txtCommandLineErase
                     size_hint: 1,0.5
-                    text: "python gw.py erase --scyl=0 --ecyl=79 --single-sided --drive=A '/home/user/mydisk.scp' COM11"
+                    text: "python gw.py erase '/home/user/mydisk.scp'"
                 GridLayout:
                     rows: 3
                     cols: 3
                     padding: 10
                     spacing: 10
                     CheckBox:
-                        id: chkFirstCylToErase
+                        id: chkCylSetsErase
                         on_release: root.build_erase_disk()
                     Label:
-                        text: "First cylinder to erase"
+                        text: "Cylinder set to erase"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtFirstCylToErase
-                        text: "0"
-                        disabled: not chkFirstCylToErase.active
+                        id: txtCylSetsErase
+                        text: "0-34,35-79"
+                        disabled: not chkCylSetsErase.active
                         on_text: root.build_erase_disk()
                     CheckBox:
-                        id: chkLastCylToErase
+                        id: chkHeadSetsErase
                         on_release: root.build_erase_disk()
                     Label:
-                        text: "Last cylinder to erase"
+                        text: "Head sets to erase"
                         text_size: self.size
                         halign: "left"
                         valign: 'middle'
                     TextInput:
-                        id: txtLastCylToErase
-                        text: "79"
-                        disabled: not chkLastCylToErase.active
+                        id: txtHeadSetsErase
+                        text: "0,1"
+                        disabled: not chkHeadSetsErase.active
                         on_text: root.build_erase_disk()
                     CheckBox:
                         id: chkSelectDriveErase
@@ -421,7 +445,7 @@
                         disabled: not chkSelectDriveErase.active
                 GridLayout:
                     rows: 1
-                    cols: 2
+                    cols: 3
                     padding: 10
                     spacing: 10
                     size_hint: 1,0.3
@@ -430,11 +454,23 @@
                         text: "Use EXE"
                         state: "normal"
                         on_release: root.build_erase_disk()
+
                     ToggleButton:
-                        id: tglSingleSidedErase
-                        text: "Single Sided"
+                        id: tglFlippyTeacErase
+                        text: "Flippy\nTeac"
                         state: "normal"
-                        on_release: root.build_erase_disk()
+                        on_release:
+                            tglFlippyPanasonicErase.active = False
+                            tglFlippyPanasonicErase.state = "normal"
+                            root.build_erase_disk()
+                    ToggleButton:
+                        id: tglFlippyPanasonicErase
+                        text: "Flippy\nPanasonic"
+                        state: "normal"
+                        on_release:
+                            tglFlippyTeacErase.active = False
+                            tglFlippyTeacErase.state = "normal"
+                            root.build_erase_disk()
                 Button:
                     id: btnLaunchErase
                     size_hint: 1,0.2

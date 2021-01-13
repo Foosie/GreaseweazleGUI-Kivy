@@ -48,10 +48,10 @@ class MainScreen(Screen):
     txtCommandLineRFD = ObjectProperty(TextInput())
     chkRevsPerTrack = ObjectProperty(CheckBox())
     txtRevsPerTrack = ObjectProperty(TextInput())
-    chkFirstCylToRead = ObjectProperty(CheckBox())
-    txtFirstCylToRead = ObjectProperty(TextInput())
-    chkLastCylToRead = ObjectProperty(CheckBox())
-    txtLastCylToRead = ObjectProperty(TextInput())
+    chkCylSetsRFD = ObjectProperty(CheckBox())
+    txtCylSetsRFD = ObjectProperty(TextInput())
+    chkHeadSetsRFD = ObjectProperty(CheckBox())
+    txtHeadSetsRFD = ObjectProperty(TextInput())
     chkSelectDriveRFD = ObjectProperty(CheckBox())
     txtSelectDriveRFD = ObjectProperty(TextInput())
     chkRateRFD = ObjectProperty(CheckBox())
@@ -59,23 +59,26 @@ class MainScreen(Screen):
     chkRpmRFD = ObjectProperty(CheckBox())
     txtRpmRFD = ObjectProperty(TextInput())
     tglUseExeRFD = ObjectProperty(ToggleButton())
-    tglSingleSidedRFD = ObjectProperty(ToggleButton())
+    tglFlippyTeacRFD = ObjectProperty(ToggleButton())
+    tglFlippyPanasonicRFD = ObjectProperty(ToggleButton())
     tglSingleSidedLegacyRFD = ObjectProperty(ToggleButton())
     chkDoubleStepRFD = ObjectProperty(CheckBox())
+    txtDoubleStepRFD = ObjectProperty(TextInput())
 
     # write to disk
     txtCommandLineWTD = ObjectProperty(TextInput())
-    chkAdjustSpeed = ObjectProperty(CheckBox())
     chkDoubleStepWTD = ObjectProperty(CheckBox())
+    txtDoubleStepWTD = ObjectProperty(TextInput())
     chkEraseEmptyWTD = ObjectProperty(CheckBox())
-    chkFirstCylToWrite = ObjectProperty(CheckBox())
-    txtFirstCylToWrite = ObjectProperty(TextInput())
-    chkLastCylToWrite = ObjectProperty(CheckBox())
-    txtLastCylToWrite = ObjectProperty(TextInput())
+    chkCylSetsWTD = ObjectProperty(CheckBox())
+    txtCylSetsWTD = ObjectProperty(TextInput())
+    chkHeadSetsWTD = ObjectProperty(CheckBox())
+    txtHeadSetsWTD = ObjectProperty(TextInput())
     chkSelectDriveWTD = ObjectProperty(CheckBox())
     txtSelectDriveWTD = ObjectProperty(TextInput())
     tglUseExeWTD = ObjectProperty(ToggleButton())
-    tglSingleSidedWTD = ObjectProperty(ToggleButton())
+    tglFlippyTeacWTD = ObjectProperty(ToggleButton())
+    tglFlippyPanasonicWTD = ObjectProperty(ToggleButton())
 
     # set delays
     txtCommandLineDelays = ObjectProperty(TextInput())
@@ -119,6 +122,10 @@ class MainScreen(Screen):
     txtCommandLineInfo = ObjectProperty(TextInput())
     tglUseExeInfo = ObjectProperty(ToggleButton())
     tglInfoBootloader = ObjectProperty(ToggleButton())
+
+    # erase disk
+    tglFlippyTeacErase = ObjectProperty(ToggleButton())
+    tglFlippyPanasonicErase = ObjectProperty(ToggleButton())
 
     # global variables
     gw_application_folder = ObjectProperty(None)
@@ -205,6 +212,7 @@ class MainScreen(Screen):
         self.gw_dirty = True
 
     def build_read_from_disk(self):
+        strack = " --track="
         if self.ids.tglUseExeRFD.state == "down":
             self.set_exe_mode("True")
         else:
@@ -220,26 +228,33 @@ class MainScreen(Screen):
         if len(self.gw_comm_port) > 0:
             cmdline += "--device " + self.gw_comm_port + " "
         if self.ids.chkDoubleStepRFD.active:
-            cmdline += "--double-step "
+            strack += "step=" + self.ids.txtDoubleStepRFD.text + ":"
         if self.ids.chkRevsPerTrack.active:
             cmdline += "--revs=" + self.ids.txtRevsPerTrack.text + " "
-        if self.ids.chkFirstCylToRead.active:
-            cmdline += "--scyl=" + self.ids.txtFirstCylToRead.text + " "
-        if self.ids.chkLastCylToRead.active:
-            cmdline += "--ecyl=" + self.ids.txtLastCylToRead.text + " "
+        if self.ids.chkCylSetsRFD.active:
+            strack += "c=" + self.ids.txtCylSetsRFD.text + ":"
+        if self.ids.chkHeadSetsRFD.active:
+            strack += "h=" + self.ids.txtHeadSetsRFD.text + ":";
         if self.ids.chkSelectDriveRFD.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveRFD.text + " "
         if self.ids.chkRateRFD.active:
             cmdline += "--rate=" + self.ids.txtRateRFD.text + " "
         if self.ids.chkRpmRFD.active:
             cmdline += "--rpm=" + self.ids.txtRpmRFD.text + " "
-        if self.ids.tglSingleSidedRFD.state == "down":
-            cmdline += "--single-sided "
+        if self.ids.tglFlippyTeacRFD.state == "down":
+            strack += "h0.off=+8:"
+        if self.ids.tglFlippyPanasonicRFD.state == "down":
+            strack += "h1.off=-8:"
+        if strack != " --track=":
+            if strack[-1] == ":": # remove trailing colon
+                strack = strack[:-1]
+                strack += " "
+            cmdline += strack + " "
         if sys.platform == "linux" or sys.platform == "darwin":
             cmdline += "'" + file_spec
         else:
             cmdline += "\"" + file_spec
-        if self.ids.tglSingleSidedRFD.state == "down" and self.ids.tglSingleSidedLegacyRFD.state == "down":
+        if self.ids.tglSingleSidedLegacyRFD.state == "down":
             cmdline += "::legacy_ss"
         if sys.platform == "linux" or sys.platform == "darwin":
             cmdline += "'"
@@ -252,6 +267,7 @@ class MainScreen(Screen):
         self.ids.txtCommandLineRFD.text = cmdline
 
     def build_write_to_disk(self):
+        strack = " --track="
         if self.ids.tglUseExeWTD.state == "down":
             self.set_exe_mode("True")
         else:
@@ -267,18 +283,23 @@ class MainScreen(Screen):
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' write "
         if len(self.gw_comm_port) > 0:
             cmdline += "--device " + self.gw_comm_port + " "
-        if self.ids.chkAdjustSpeed.active:
-            cmdline += "--adjust-speed "
         if self.ids.chkDoubleStepWTD.active:
-            cmdline += "--double-step "
+            strack += "step=" + self.ids.txtDoubleStepWTD.text + ":"
         if self.ids.chkEraseEmptyWTD.active:
             cmdline += "--erase-empty "
-        if self.ids.chkFirstCylToWrite.active:
-            cmdline += "--scyl=" + self.ids.txtFirstCylToWrite.text + " "
-        if self.ids.chkLastCylToWrite.active:
-            cmdline += "--ecyl=" + self.ids.txtLastCylToWrite.text + " "
-        if self.ids.tglSingleSidedWTD.state == "down":
-            cmdline += "--single-sided "
+        if self.ids.chkCylSetsWTD.active:
+            strack += "c=" + self.ids.txtCylSetsWTD.text + ":"
+        if self.ids.chkHeadSetsWTD.active:
+            strack += "h=" + self.ids.txtHeadSetsWTD.text + ":";
+        if self.ids.tglFlippyTeacWTD.state == "down":
+            strack += "h0.off=+8:"
+        if self.ids.tglFlippyPanasonicWTD.state == "down":
+            strack += "h1.off=-8:"
+        if strack != " --track=":
+            if strack[-1] == ":": # remove trailing colon
+                strack = strack[:-1]
+                strack += " "
+            cmdline += strack + " "
         if self.ids.chkSelectDriveWTD.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveWTD.text + " "
         if sys.platform == "darwin":
@@ -290,6 +311,7 @@ class MainScreen(Screen):
         self.ids.txtCommandLineWTD.text = cmdline
 
     def build_erase_disk(self):
+        strack = " --track="
         if self.ids.tglUseExeErase.state == "down":
             self.set_exe_mode("True")
         else:
@@ -303,14 +325,21 @@ class MainScreen(Screen):
             cmdline = "\"" + "python " + " \'" + self.gw_application_folder + self.gw_script + "\' erase "
         if len(self.gw_comm_port) > 0:
             cmdline += "--device " + self.gw_comm_port + " "
-        if self.ids.chkFirstCylToErase.active:
-            cmdline += "--scyl=" + self.ids.txtFirstCylToErase.text + " "
-        if self.ids.chkLastCylToErase.active:
-            cmdline += "--ecyl=" + self.ids.txtLastCylToErase.text + " "
-        if self.ids.tglSingleSidedErase.state == "down":
-            cmdline += "--single-sided "
+        if self.ids.chkCylSetsErase.active:
+            strack += "c=" + self.ids.txtCylSetsErase.text + ":"
+        if self.ids.chkHeadSetsErase.active:
+            strack += "h=" + self.ids.txtHeadSetsErase.text + ":";
         if self.ids.chkSelectDriveErase.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveErase.text + " "
+        if self.ids.tglFlippyTeacErase.state == "down":
+            strack += "h0.off=+8:"
+        if self.ids.tglFlippyPanasonicErase.state == "down":
+            strack += "h1.off=-8:"
+        if strack != " --track=":
+            if strack[-1] == ":": # remove trailing colon
+                strack = strack[:-1]
+                strack += " "
+            cmdline += strack + " "
         if sys.platform == 'darwin':
             cmdline += "\""
         if sys.platform == 'linux':
@@ -829,21 +858,22 @@ class MainScreen(Screen):
             config.set('gbReadFromDisk', 'chkDoubleStepRFD', 'True')
         else:
             config.set('gbReadFromDisk', 'chkDoubleStepRFD', 'False')
+        config.set('gbReadFromDisk', 'txtDoubleStepRFD', self.ids.txtDoubleStepRFD.text)
         if self.ids.chkRevsPerTrack.active:
             config.set('gbReadFromDisk', 'chkRevsPerTrack',  'True')
         else:
             config.set('gbReadFromDisk', 'chkRevsPerTrack',  'False')
         config.set('gbReadFromDisk', 'txtRevsPerTrack', self.ids.txtRevsPerTrack.text)
-        if self.ids.chkFirstCylToRead.active:
-            config.set('gbReadFromDisk', 'chkFirstCylToRead', 'True')
+        if self.ids.chkCylSetsRFD.active:
+            config.set('gbReadFromDisk', 'chkCylSetsRFD', 'True')
         else:
-            config.set('gbReadFromDisk', 'chkFirstCylToRead', 'False')
-        config.set('gbReadFromDisk', 'txtFirstCylToRead', self.ids.txtFirstCylToRead.text)
-        if self.ids.chkLastCylToRead.active:
-            config.set('gbReadFromDisk', 'chkLastCylToRead', 'True')
+            config.set('gbReadFromDisk', 'chkCylSetsRFD', 'False')
+        config.set('gbReadFromDisk', 'txtCylSetsRFD', self.ids.txtCylSetsRFD.text)
+        if self.ids.chkHeadSetsRFD.active:
+            config.set('gbReadFromDisk', 'chkHeadSetsRFD', 'True')
         else:
-            config.set('gbReadFromDisk', 'chkLastCylToRead', 'False')
-        config.set('gbReadFromDisk', 'txtLastCylToRead', self.ids.txtLastCylToRead.text)
+            config.set('gbReadFromDisk', 'chkHeadSetsRFD', 'False')
+        config.set('gbReadFromDisk', 'txtHeadSetsRFD', self.ids.txtHeadSetsRFD.text)
         if self.ids.chkSelectDriveRFD.active:
             config.set('gbReadFromDisk', 'chkSelectDriveRFD', 'True')
         else:
@@ -859,10 +889,14 @@ class MainScreen(Screen):
         else:
             config.set('gbReadFromDisk', 'chkRpmRFD', 'False')
         config.set('gbReadFromDisk', 'txtRpmRFD', self.ids.txtRpmRFD.text)
-        if self.ids.tglSingleSidedRFD.state == "down":
-            config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'True')
+        if self.ids.tglFlippyTeacRFD.state == "down":
+            config.set('gbReadFromDisk', 'tglFlippyTeacRFD', 'True')
         else:
-            config.set('gbReadFromDisk', 'tglSingleSidedRFD', 'False')
+            config.set('gbReadFromDisk', 'tglFlippyTeacRFD', 'False')
+        if self.ids.tglFlippyPanasonicRFD.state == "down":
+            config.set('gbReadFromDisk', 'tglFlippyPanasonicRFD', 'True')
+        else:
+            config.set('gbReadFromDisk', 'tglFlippyPanasonicRFD', 'False')
         if self.ids.tglSingleSidedLegacyRFD.state == "down":
             config.set('gbReadFromDisk', 'tglSingleSidedLegacyRFD', 'True')
         else:
@@ -873,60 +907,65 @@ class MainScreen(Screen):
         config.set('gbWriteToDisk', 'txtCommandLineWTD', self.ids.txtCommandLineWTD.text)
         config.set('gbWriteToDisk', 'gw_WTDFilename', self.main_screen.gw_WTDFilename)
         config.set('gbWriteToDisk', 'gw_WTDFolder', self.main_screen.gw_WTDFolder)
-        if self.ids.chkAdjustSpeed.active:
-            config.set('gbWriteToDisk', 'chkAdjustSpeed', 'True')
-        else:
-            config.set('gbWriteToDisk', 'chkAdjustSpeed', 'False')
         if self.ids.chkDoubleStepWTD.active:
             config.set('gbWriteToDisk', 'chkDoubleStepWTD', 'True')
         else:
             config.set('gbWriteToDisk', 'chkDoubleStepWTD', 'False')
+        config.set('gbWriteToDisk', 'txtDoubleStepWTD', self.ids.txtDoubleStepWTD.text)
         if self.ids.chkEraseEmptyWTD.active:
             config.set('gbWriteToDisk', 'chkEraseEmptyWTD', 'True')
         else:
             config.set('gbWriteToDisk', 'chkEraseEmptyWTD', 'False')
-        if self.ids.chkFirstCylToWrite.active:
-            config.set('gbWriteToDisk', 'chkFirstCylToWrite', 'True')
+        if self.ids.chkCylSetsWTD.active:
+            config.set('gbWriteToDisk', 'chkCylSetsWTD', 'True')
         else:
-            config.set('gbWriteToDisk', 'chkFirstCylToWrite', 'False')
-        config.set('gbWriteToDisk', 'txtFirstCylToWrite', self.ids.txtFirstCylToWrite.text)
-        if self.ids.chkLastCylToWrite.active:
-            config.set('gbWriteToDisk', 'chkLastCylToWrite', 'True')
+            config.set('gbWriteToDisk', 'chkCylSetsWTD', 'False')
+        config.set('gbWriteToDisk', 'txtCylSetsWTD', self.ids.txtCylSetsWTD.text)
+        if self.ids.chkHeadSetsWTD.active:
+            config.set('gbWriteToDisk', 'chkHeadSetsWTD', 'True')
         else:
-            config.set('gbWriteToDisk', 'chkLastCylToWrite', 'False')
-        config.set('gbWriteToDisk', 'txtLastCylToWrite', self.ids.txtLastCylToWrite.text)
+            config.set('gbWriteToDisk', 'chkHeadSetsWTD', 'False')
+        config.set('gbWriteToDisk', 'txtHeadSetsWTD', self.ids.txtHeadSetsWTD.text)
         if self.ids.chkSelectDriveWTD.active:
             config.set('gbWriteToDisk', 'chkSelectDriveWTD', 'True')
         else:
             config.set('gbWriteToDisk', 'chkSelectDriveWTD', 'False')
         config.set('gbWriteToDisk', 'txtSelectDriveWTD', self.ids.txtSelectDriveWTD.text)
-        if self.ids.tglSingleSidedWTD.state == "down":
-            config.set('gbWriteToDisk', 'tglSingleSidedWTD', 'True')
+        if self.ids.tglFlippyTeacWTD.state == "down":
+            config.set('gbWriteToDisk', 'tglFlippyTeacWTD', 'True')
         else:
-            config.set('gbWriteToDisk', 'tglSingleSidedWTD', 'False')
+            config.set('gbWriteToDisk', 'tglFlippyTeacWTD', 'False')
+        if self.ids.tglFlippyPanasonicWTD.state == "down":
+            config.set('gbWriteToDisk', 'tglFlippyPanasonicWTD', 'True')
+        else:
+            config.set('gbWriteToDisk', 'tglFlippyPanasonicWTD', 'False')
 
         # erase disk
         config.add_section('gbEraseDisk')
         config.set('gbEraseDisk', 'txtCommandLineErase', self.ids.txtCommandLineErase.text)
-        if self.ids.chkFirstCylToErase.active:
-            config.set('gbEraseDisk', 'chkFirstCylToErase', 'True')
+        if self.ids.chkCylSetsErase.active:
+            config.set('gbEraseDisk', 'chkCylSetsErase', 'True')
         else:
-            config.set('gbEraseDisk', 'chkFirstCylToErase', 'False')
-        config.set('gbEraseDisk', 'txtFirstCylToErase', self.ids.txtFirstCylToErase.text)
-        if self.ids.chkLastCylToErase.active:
-            config.set('gbEraseDisk', 'chkLastCylToErase', 'True')
+            config.set('gbEraseDisk', 'chkCylSetsErase', 'False')
+        config.set('gbEraseDisk', 'txtCylSetsErase', self.ids.txtCylSetsErase.text)
+        if self.ids.chkHeadSetsErase.active:
+            config.set('gbEraseDisk', 'chkHeadSetsErase', 'True')
         else:
-            config.set('gbEraseDisk', 'chkLastCylToErase', 'False')
-        config.set('gbEraseDisk', 'txtLastCylToErase', self.ids.txtLastCylToErase.text)
+            config.set('gbEraseDisk', 'chkHeadSetsErase', 'False')
+        config.set('gbEraseDisk', 'txtHeadSetsErase', self.ids.txtHeadSetsErase.text)
         if self.ids.chkSelectDriveErase.active:
             config.set('gbEraseDisk', 'chkSelectDriveErase', 'True')
         else:
             config.set('gbEraseDisk', 'chkSelectDriveErase', 'False')
         config.set('gbEraseDisk', 'txtSelectDriveErase', self.ids.txtSelectDriveErase.text)
-        if self.ids.tglSingleSidedErase.state == "down":
-            config.set('gbEraseDisk', 'tglSingleSidedErase', 'True')
+        if self.ids.tglFlippyTeacErase.state == "down":
+            config.set('gbEraseDisk', 'tglFlippyTeacErase', 'True')
         else:
-            config.set('gbEraseDisk', 'tglSingleSidedErase', 'False')
+            config.set('gbEraseDisk', 'tglFlippyTeacErase', 'False')
+        if self.ids.tglFlippyPanasonicErase.state == "down":
+            config.set('gbEraseDisk', 'tglFlippyPanasonicErase', 'True')
+        else:
+            config.set('gbEraseDisk', 'tglFlippyPanasonicErase', 'False')
 
         # set delays
         config.add_section('gbSetDelays')
@@ -1017,21 +1056,22 @@ class MainScreen(Screen):
             if state == 'True':
                 self.ids.chkDoubleStepRFD.active = True
                 self.ids.chkDoubleStepRFD.state = 'down'
+            self.ids.txtDoubleStepRFD.text = config.get('gbReadFromDisk', 'txtDoubleStepRFD')
             state = config.get('gbReadFromDisk', 'chkRevsPerTrack')
             if state == 'True':
                 self.ids.chkRevsPerTrack.active = True
                 self.ids.chkRevsPerTrack.state = 'down'
             self.ids.txtRevsPerTrack.text = config.get('gbReadFromDisk', 'txtRevsPerTrack')
-            state = config.get('gbReadFromDisk', 'chkFirstCylToRead')
+            state = config.get('gbReadFromDisk', 'chkCylSetsRFD')
             if state == 'True':
-                self.ids.chkFirstCylToRead.active = True
-                self.ids.chkFirstCylToRead.state = 'down'
-            self.ids.txtFirstCylToRead.text = config.get('gbReadFromDisk', 'txtFirstCylToRead')
-            state = config.get('gbReadFromDisk', 'chkLastCylToRead')
+                self.ids.chkCylSetsRFD.active = True
+                self.ids.chkCylSetsRFD.state = 'down'
+            self.ids.txtCylSetsRFD.text = config.get('gbReadFromDisk', 'txtCylSetsRFD')
+            state = config.get('gbReadFromDisk', 'chkHeadSetsRFD')
             if state == 'True':
-                self.ids.chkLastCylToRead.active = True
-                self.ids.chkLastCylToRead.state = 'down'
-            self.ids.txtLastCylToRead.text = config.get('gbReadFromDisk', 'txtLastCylToRead')
+                self.ids.chkHeadSetsRFD.active = True
+                self.ids.chkHeadSetsRFD.state = 'down'
+            self.ids.txtHeadSetsRFD.text = config.get('gbReadFromDisk', 'txtHeadSetsRFD')
             state = config.get('gbReadFromDisk', 'chkSelectDriveRFD')
             if state == 'True':
                 self.ids.chkSelectDriveRFD.active = True
@@ -1047,10 +1087,14 @@ class MainScreen(Screen):
                 self.ids.chkRpmRFD.active = True
                 self.ids.chkRpmRFD.state = 'down'
             self.ids.txtRpmRFD.text = config.get('gbReadFromDisk', 'txtRpmRFD')
-            state = config.get('gbReadFromDisk', 'tglSingleSidedRFD')
+            state = config.get('gbReadFromDisk', 'tglFlippyTeacRFD')
             if state == 'True':
-                self.ids.tglSingleSidedRFD.active = True
-                self.ids.tglSingleSidedRFD.state = 'down'
+                self.ids.tglFlippyTeacRFD.active = True
+                self.ids.tglFlippyTeacRFD.state = 'down'
+            state = config.get('gbReadFromDisk', 'tglFlippyPanasonicRFD')
+            if state == 'True':
+                self.ids.tglFlippyPanasonicRFD.active = True
+                self.ids.tglFlippyPanasonicRFD.state = 'down'
             state = config.get('gbReadFromDisk', 'tglSingleSidedLegacyRFD')
             if state == 'True':
                 self.ids.tglSingleSidedLegacyRFD.active = True
@@ -1059,58 +1103,63 @@ class MainScreen(Screen):
             # write to disk
             self.main_screen.gw_WTDFilename = config.get('gbWriteToDisk', 'gw_WTDFilename')
             self.main_screen.gw_WTDFolder = config.get('gbWriteToDisk', 'gw_WTDFolder')
-            state = config.get('gbWriteToDisk', 'chkAdjustSpeed')
-            if state == 'True':
-                self.ids.chkAdjustSpeed.active = True
-                self.ids.chkAdjustSpeed.state = 'down'
             state = config.get('gbWriteToDisk', 'chkDoubleStepWTD')
             if state == 'True':
                 self.ids.chkDoubleStepWTD.active = True
                 self.ids.chkDoubleStepWTD.state = 'down'
+            self.ids.txtDoubleStepWTD.text = config.get('gbWriteToDisk', 'txtDoubleStepWTD')
             state = config.get('gbWriteToDisk', 'chkEraseEmptyWTD')
             if state == 'True':
                 self.ids.chkEraseEmptyWTD.active = True
                 self.ids.chkEraseEmptyWTD.state = 'down'
-            state = config.get('gbWriteToDisk', 'chkFirstCylToWrite')
+            state = config.get('gbWriteToDisk', 'chkCylSetsWTD')
             if state == 'True':
-                self.ids.chkFirstCylToWrite.active = True
-                self.ids.chkFirstCylToWrite.state = 'down'
-            self.ids.txtFirstCylToWrite.text = config.get('gbWriteToDisk', 'txtFirstCylToWrite')
-            state = config.get('gbWriteToDisk', 'chkLastCylToWrite')
+                self.ids.chkCylSetsWTD.active = True
+                self.ids.chkCylSetsWTD.state = 'down'
+            self.ids.txtCylSetsWTD.text = config.get('gbWriteToDisk', 'txtCylSetsWTD')
+            state = config.get('gbWriteToDisk', 'chkHeadSetsWTD')
             if state == 'True':
-                self.ids.chkLastCylToWrite.active = True
-                self.ids.chkLastCylToWrite.state = 'down'
-            self.ids.txtLastCylToWrite.text = config.get('gbWriteToDisk', 'txtLastCylToWrite')
+                self.ids.chkHeadSetsWTD.active = True
+                self.ids.chkHeadSetsWTD.state = 'down'
+            self.ids.txtHeadSetsWTD.text = config.get('gbWriteToDisk', 'txtHeadSetsWTD')
             state = config.get('gbWriteToDisk', 'chkSelectDriveWTD')
             if state == 'True':
                 self.ids.chkSelectDriveWTD.active = True
                 self.ids.chkSelectDriveWTD.state = 'down'
             self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
-            state = config.get('gbWriteToDisk', 'tglSingleSidedWTD')
+            state = config.get('gbWriteToDisk', 'tglFlippyTeacWTD')
             if state == 'True':
-                self.ids.tglSingleSidedWTD.active = True
-                self.ids.tglSingleSidedWTD.state = 'down'
+                self.ids.tglFlippyTeacWTD.active = True
+                self.ids.tglFlippyTeacWTD.state = 'down'
+            state = config.get('gbWriteToDisk', 'tglFlippyPanasonicWTD')
+            if state == 'True':
+                self.ids.tglFlippyPanasonicWTD.active = True
+                self.ids.tglFlippyPanasonicWTD.state = 'down'
 
             # erase disk
-            state = config.get('gbEraseDisk', 'chkFirstCylToErase')
+            state = config.get('gbEraseDisk', 'chkCylSetsErase')
             if state == 'True':
-                self.ids.chkFirstCylToErase.active = True
-                self.ids.chkFirstCylToErase.state = 'down'
-            self.ids.txtFirstCylToErase.text = config.get('gbEraseDisk', 'txtFirstCylToErase')
-            state = config.get('gbEraseDisk', 'chkLastCylToErase')
+                self.ids.chkCylSetsErase.active = True
+                self.ids.chkCylSetsErase.state = 'down'
+            self.ids.txtCylSetsErase.text = config.get('gbEraseDisk', 'txtCylSetsErase')
+            state = config.get('gbEraseDisk', 'chkHeadSetsErase')
             if state == 'True':
-                self.ids.chkLastCylToErase.active = True
-                self.ids.chkLastCylToErase.state = 'down'
-            self.ids.txtLastCylToErase.text = config.get('gbEraseDisk', 'txtLastCylToErase')
+                self.ids.chkHeadSetsErase.active = True
+                self.ids.chkHeadSetsErase.state = 'down'
+            self.ids.txtHeadSetsErase.text = config.get('gbEraseDisk', 'txtHeadSetsErase')
             state = config.get('gbEraseDisk', 'chkSelectDriveErase')
             if state == 'True':
                 self.ids.chkSelectDriveErase.active = True
                 self.ids.chkSelectDriveErase.state = 'down'
             self.ids.txtSelectDriveErase.text = config.get('gbEraseDisk', 'txtSelectDriveErase')
-            state = config.get('gbEraseDisk', 'tglSingleSidedErase')
+            state = config.get('gbEraseDisk', 'tglFlippyTeacErase')
             if state == 'True':
-                self.ids.tglSingleSidedErase.active = True
-                self.ids.tglSingleSidedErase.state = 'down'
+                self.ids.tglFlippyTeacErase.active = True
+                self.ids.tglFlippyTeacErase.state = 'down'
+            state = config.get('gbEraseDisk', 'tglFlippyPanasonicErase')
+            if state == 'True':
+                self.ids.tglFlippyPanasonicErase.active = True
+                self.ids.tglFlippyPanasonicErase.state = 'down'
 
             # set delays
             self.ids.txtCommandLineDelays.text = config.get('gbSetDelays', 'txtCommandLineDelays')
@@ -1279,7 +1328,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.50 - Host Tools v0.21 - by Don Mankin"
+    title = "GreaseweazleGUI v0.53 - Host Tools v0.23 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
