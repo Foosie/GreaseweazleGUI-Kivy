@@ -45,6 +45,8 @@
         txtCylSetsWTD: txtCylSetsWTD
         chkHeadSetsWTD: chkHeadSetsWTD
         txtHeadSetsWTD: txtHeadSetsWTD
+        chkPrecomp:chkPrecomp
+        txtPrecomp: txtPrecomp
         txtSelectDriveWTD: txtSelectDriveWTD
         tglUseExeWTD: tglUseExeWTD
         tglFlippyTeacWTD: tglFlippyTeacWTD
@@ -283,7 +285,7 @@
                     size_hint: 1,0.5
                     text: "python gw.py write --scyl=0 --ecyl=79 --adjust-speed '/home/user/mydisk.scp' COM11"
                 GridLayout:
-                    rows: 5
+                    rows: 6
                     cols: 3
                     padding: 10
                     spacing: 10
@@ -336,6 +338,19 @@
                         text: "0,1"
                         disabled: not chkHeadSetsWTD.active
                         on_text: root.build_write_to_disk()
+                    CheckBox:
+                        id: chkPrecomp
+                        on_release: root.build_write_to_disk()
+                    Label:
+                        text: "Precompensation"
+                        text_size: self.size
+                        halign: "left"
+                        valign: 'middle'
+                    TextInput:
+                        id: txtPrecomp
+                        text: "type=mfm:40=125"
+                        on_text: root.build_write_to_disk()
+                        disabled: not chkPrecomp.active
                     CheckBox:
                         id: chkSelectDriveWTD
                         on_release: root.build_write_to_disk()

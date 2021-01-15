@@ -74,6 +74,8 @@ class MainScreen(Screen):
     txtCylSetsWTD = ObjectProperty(TextInput())
     chkHeadSetsWTD = ObjectProperty(CheckBox())
     txtHeadSetsWTD = ObjectProperty(TextInput())
+    chkPrecomp = ObjectProperty(CheckBox())
+    txtPrecomp = ObjectProperty(TextInput())
     chkSelectDriveWTD = ObjectProperty(CheckBox())
     txtSelectDriveWTD = ObjectProperty(TextInput())
     tglUseExeWTD = ObjectProperty(ToggleButton())
@@ -300,6 +302,8 @@ class MainScreen(Screen):
                 strack = strack[:-1]
                 strack += " "
             cmdline += strack + " "
+        if self.ids.chkPrecomp.active:
+            cmdline += "--precomp=" + self.ids.txtPrecomp.text + " "
         if self.ids.chkSelectDriveWTD.active:
             cmdline += "--drive=" + self.ids.txtSelectDriveWTD.text + " "
         if sys.platform == "darwin":
@@ -931,6 +935,11 @@ class MainScreen(Screen):
         else:
             config.set('gbWriteToDisk', 'chkSelectDriveWTD', 'False')
         config.set('gbWriteToDisk', 'txtSelectDriveWTD', self.ids.txtSelectDriveWTD.text)
+        if self.ids.chkPrecomp.active:
+            config.set('gbWriteToDisk', 'chkPrecomp', 'True')
+        else:
+            config.set('gbWriteToDisk', 'chkPrecomp', 'False')
+        config.set('gbWriteToDisk', 'txtPrecomp', self.ids.txtPrecomp.text)
         if self.ids.tglFlippyTeacWTD.state == "down":
             config.set('gbWriteToDisk', 'tglFlippyTeacWTD', 'True')
         else:
@@ -1127,6 +1136,11 @@ class MainScreen(Screen):
                 self.ids.chkSelectDriveWTD.active = True
                 self.ids.chkSelectDriveWTD.state = 'down'
             self.ids.txtSelectDriveWTD.text = config.get('gbWriteToDisk', 'txtSelectDriveWTD')
+            state = config.get('gbWriteToDisk', 'chkPrecomp')
+            if state == 'True':
+                self.ids.chkPrecomp.active = True
+                self.ids.chkPrecomp.state = 'down'
+            self.ids.txtPrecomp.text = config.get('gbWriteToDisk', 'txtPrecomp')
             state = config.get('gbWriteToDisk', 'tglFlippyTeacWTD')
             if state == 'True':
                 self.ids.tglFlippyTeacWTD.active = True
@@ -1328,7 +1342,7 @@ class ErrorScreen(Screen):
 
 GUI = Builder.load_file("gui.kv")
 class MainApp(App):
-    title = "GreaseweazleGUI v0.53 - Host Tools v0.23 - by Don Mankin"
+    title = "GreaseweazleGUI v0.54 - Host Tools v0.24 - by Don Mankin"
 
     def build(self):
         Window.bind(on_request_close=self.on_request_close)
